@@ -7,3 +7,7 @@ export const createUser = (input: Partial<User>) => {
 export const findUserById = async (id: string) => {
   return UserModal.findById(id);
 };
+
+export const findByEmail = async (email: string) => {
+  return UserModal.findOne({ email });
+};
