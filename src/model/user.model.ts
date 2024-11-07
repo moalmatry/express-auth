@@ -7,7 +7,6 @@ import {
   Severity,
 } from "@typegoose/typegoose";
 import argon2 from "argon2";
-import { nanoid } from "nanoid";
 import log from "../utils/logger";
 
 @pre<User>("save", async function () {
@@ -41,7 +40,8 @@ export class User {
   @prop({ required: true })
   password: string;
 
-  @prop({ required: true, default: () => nanoid() })
+  // FIXME: nanoid is making error
+  @prop({ required: true, default: () => Math.random() })
   verificationCode: string;
 
   @prop()

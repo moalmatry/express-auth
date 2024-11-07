@@ -9,8 +9,9 @@ export const createUserHandler = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    // const body = req.body;
-    // const user = await createUser(body);
+    const body = req.body;
+    console.log(body);
+    const user = await createUser(body);
     // await sendEmail();
 
     res.status(201).json({ message: "User created successfully" });
