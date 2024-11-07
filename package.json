@@ -22,7 +22,7 @@
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
     "mongoose": "^8.8.0",
-    "nanoid": "^5.0.8",
+    "nanoid": "^3.1.30",
     "nodemailer": "^6.9.16",
     "pino": "^9.5.0",
     "zod": "^3.23.8"

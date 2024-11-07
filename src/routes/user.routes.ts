@@ -5,6 +5,10 @@ import { createUserHandler } from "../controller/user.controller";
 
 const router: Router = express.Router();
 
-router.post("/api/users", validateResource(createUserSchema), createUserHandler);
+router.post(
+  "/api/users",
+  validateResource(createUserSchema),
+  createUserHandler
+);
 
 export default router;

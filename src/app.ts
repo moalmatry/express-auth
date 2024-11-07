@@ -7,6 +7,8 @@ import router from "./routes";
 
 const app = express();
 
+// NOTE: bodyParser alternative
+app.use(express.json());
 app.use(router);
 
 const port = config.get("port");
