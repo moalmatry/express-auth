@@ -14,6 +14,6 @@ app.use(router);
 const port = config.get("port");
 
 app.listen(port, async () => {
-  log.info(`Listening on port ${port}`);
+  log.info(`Listening on port http://localhost:${port}`);
   connectToDb();
 });

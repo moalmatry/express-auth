@@ -1,4 +1,4 @@
-import express, { Router } from "express";
+import express from "express";
 import {
   createUserHandler,
   verifyUserHandler,
@@ -14,12 +14,12 @@ import {
   resetPasswordSchema,
 } from "./../schema/user.schema";
 
-const router: Router = express.Router();
+const router = express.Router();
 
 router.post("/", validateResource(createUserSchema), createUserHandler);
 
 router.post(
-  "/verify/:id/:verification-code",
+  "/verify/:id/:verificationCode",
   validateResource(verifyUserSchema),
   verifyUserHandler
 );

@@ -44,7 +44,7 @@ export class User {
   @prop({ required: true })
   password: string;
 
-  @prop({ required: false, default: () => nanoid() })
+  @prop({ required: true, default: () => nanoid() })
   verificationCode: string;
 
   @prop()

@@ -20,22 +20,28 @@ export const createUserHandler = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const body = req.body;
+    const { body } = req;
 
     const user = await createUser(body);
     await sendEmail({
       from: "test@example.com",
       to: user.email,
       subject: "Please verify your email",
-      text: `Please click on the link to verify your email: ${user.verificationCode} Id: ${user._id}`,
+      text: `Please click on the link to verify your email code is :${user.verificationCode} user-Id: ${user._id}`,
     });
 
     res.status(201).json({ message: "User created successfully" });
     return;
-  } catch (error) {
-    console.log(error);
-    res.status(400).json({ message: error });
-    // next(error); // Pass the error to the next middleware (error handler)
+  } catch (e: any) {
+    if (e.code === 11000) {
+      res.status(400).json({
+        message: "Email already exists",
+      });
+      return;
+    }
+
+    res.status(500).json({ message: e });
+    next(e);
     return;
   }
 };
@@ -96,7 +102,9 @@ export const forgotPasswordHandler = async (
     if (!user.verified) {
       res
         .status(400)
-        .json("User is not verified. Please verify your email first.");
+        .json({
+          message: "User is not verified. Please verify your email first.",
+        });
       return;
     }
 
@@ -111,9 +119,9 @@ export const forgotPasswordHandler = async (
       text: `Please click on the link to reset your password: http://localhost:3000/reset-password/${user._id}/${passwordResetCode}`,
     });
     log.debug(`Password reset code sent to ${email}`);
-    res
-      .status(200)
-      .json("Email has been sent to your email. Please check your inbox");
+    res.status(200).json({
+      message: "Email has been sent to your email. Please check your inbox.",
+    });
     return;
   } catch (error: any) {
     res.status(400).json({ message: error.message });
