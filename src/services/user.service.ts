@@ -1,6 +1,6 @@
 import UserModal, { User } from "../model/user.model";
 
-export const createUser = (input: Partial<User>) => {
+export const createUser = async (input: Partial<User>) => {
   return UserModal.create(input);
 };
 

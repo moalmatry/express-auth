@@ -33,6 +33,7 @@ export const createUserHandler = async (
     res.status(201).json({ message: "User created successfully" });
     return;
   } catch (error) {
+    console.log(error);
     res.status(400).json({ message: error });
     // next(error); // Pass the error to the next middleware (error handler)
     return;
