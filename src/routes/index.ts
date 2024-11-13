@@ -11,6 +11,6 @@ router.get("/healthCheck", (_: Request, res: Response) => {
 });
 
 router.use("/api/users", user);
-router.use(auth);
+router.use("/api/sessions", auth);
 
 export default router;
