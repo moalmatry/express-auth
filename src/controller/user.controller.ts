@@ -7,7 +7,7 @@ import {
 } from "../schema/user.schema"; // Assuming this schema is defined somewhere
 import {
   createUser,
-  findByEmail,
+  findUserByEmail,
   findUserById,
 } from "../services/user.service";
 import sendEmail from "../utils/mailer";
@@ -53,35 +53,37 @@ export const verifyUserHandler = async (
 ): Promise<void> => {
   const { id, verificationCode } = req.params;
 
-  try {
-    // Find the user by id
-    const user = await findUserById(id);
+  // try {
+  // Find the user by id
+  const user = await findUserById(id);
 
-    if (!user) {
-      res.status(404).json({ message: "Could not verify user" });
-      return;
-    }
-
-    // Check to see if they are already verified
-    if (user.verified) {
-      res.status(404).json({ message: "User is already verified" });
-      return;
-    }
-
-    // Check to see if the verification code matches
-    if (user.verificationCode === verificationCode) {
-      user.verified = true;
-      await user.save();
-
-      res.status(200).json({ message: "User verified successfully" });
-      return;
-    } else {
-      res.status(400).json({ message: "Invalid verification code" });
-      return;
-    }
-  } catch (error: any) {
-    res.status(400).json({ message: "Invalid verification code or user" });
+  if (!user) {
+    res.status(404).json({ message: "Could not verify user" });
+    return;
   }
+
+  // Check to see if they are already verified
+  if (user.verified) {
+    res.status(404).json({ message: "User is already verified" });
+    return;
+  }
+
+  // Check to see if the verification code matches
+  if (user.verificationCode === verificationCode) {
+    user.verified = true;
+    await user.save();
+
+    res.status(200).json({ message: "User verified successfully" });
+    return;
+  } else {
+    res
+      .status(400)
+      .json({ message: "Invalid verification code or something went wrong" });
+    return;
+  }
+  // } catch (error: any) {
+  //   res.status(400).json({ message: "Invalid verification code or user" });
+  // }
 };
 
 export const forgotPasswordHandler = async (
@@ -90,7 +92,7 @@ export const forgotPasswordHandler = async (
 ) => {
   try {
     const { email } = req.body;
-    const user = await findByEmail(email);
+    const user = await findUserByEmail(email);
     if (!user) {
       log.debug(`User with email ${email} does't exist.`);
       res.status(200).json({
@@ -100,11 +102,9 @@ export const forgotPasswordHandler = async (
     }
 
     if (!user.verified) {
-      res
-        .status(400)
-        .json({
-          message: "User is not verified. Please verify your email first.",
-        });
+      res.status(400).json({
+        message: "User is not verified. Please verify your email first.",
+      });
       return;
     }
 
@@ -112,11 +112,12 @@ export const forgotPasswordHandler = async (
 
     user.passwordRestCode = passwordResetCode;
     await user.save();
+
     await sendEmail({
       from: "test@example.com",
       to: user.email,
       subject: "Password Reset Request",
-      text: `Please click on the link to reset your password: http://localhost:3000/reset-password/${user._id}/${passwordResetCode}`,
+      text: `User id is: ${user._id} ,Password reset code: ${passwordResetCode}`,
     });
     log.debug(`Password reset code sent to ${email}`);
     res.status(200).json({
@@ -151,7 +152,7 @@ export const resetPasswordHandler = async (
     user.password = password;
     await user.save();
 
-    res.status(200).json({ message: "Password reset successfully" });
+    res.status(200).json({ message: "Password updated successfully" });
     return;
   } catch (error: any) {
     res.status(400).json({ message: error.message });

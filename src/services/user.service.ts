@@ -4,10 +4,10 @@ export const createUser = (input: Partial<User>) => {
   return UserModal.create(input);
 };
 
-export const findUserById = async (id: string) => {
+export const findUserById = (id: string) => {
   return UserModal.findById(id);
 };
 
-export const findByEmail = async (email: string) => {
+export const findUserByEmail = (email: string) => {
   return UserModal.findOne({ email });
 };

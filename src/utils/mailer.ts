@@ -2,6 +2,7 @@ import nodemailer, { SendMailOptions } from "nodemailer";
 import config from "config";
 import log from "./logger";
 
+// Create test emails
 // const createTestCreds = async () => {
 //   const creds = await nodemailer.createTestAccount();
 

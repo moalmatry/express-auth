@@ -19,7 +19,7 @@ export const signJwt = (
 
 export const verifyJwt = <T>(
   token: string,
-  keyName: "accessTokenPrivateKey" | "refreshTokenPrivateKey"
+  keyName: "accessTokenPublicKey" | "refreshTokenPublickey"
 ): T | null => {
   const publicKey = Buffer.from(config.get<string>(keyName), "base64").toString(
     "ascii"

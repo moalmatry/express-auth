@@ -1,13 +1,13 @@
 import { Request, Response } from "express";
 import { CreateUserInput } from "../schema/auth.schema";
-import { findByEmail } from "../services/user.service";
+import { findUserByEmail } from "../services/user.service";
 export const createSessionHandler = async (
   req: Request<{}, {}, CreateUserInput>,
   res: Response
 ) => {
   const { email, password } = req.body;
 
-  const user = await findByEmail(email);
+  const user = await findUserByEmail(email);
 
   if (!user)
     return res.status(400).json({ message: "Invalid email or password" });
@@ -17,3 +17,5 @@ export const createSessionHandler = async (
 
   const isValid = await user.validatePassword(password);
 };
+
+// stopped in 1:35:18
