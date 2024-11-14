@@ -3,17 +3,15 @@ import config from "config";
 
 export const signJwt = (
   object: Object,
-  keyName: "accessTokenPrivateKey" | "refreshTokenPrivateKey",
   options?: Jwt.SignOptions | undefined
 ) => {
-  const signingKey = Buffer.from(
-    process.env[keyName] || config.get<string>(keyName),
-    "base64"
-  ).toString("ascii");
+  // const signingKey = Buffer.from(
+  //   process.env[keyName] || config.get<string>(keyName),
+  //   "base64"
+  // ).toString("ascii");
 
-  return Jwt.sign(object, signingKey, {
+  return Jwt.sign(object, process.env.JWT_SECRET!, {
     ...(options && options),
-    algorithm: "RS256",
   });
 };
 

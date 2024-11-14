@@ -13,12 +13,9 @@ export const signRefreshToken = async ({ userId }: { userId: string }) => {
     userId,
   });
 
-  const refreshToken = signJwt(
-    {
-      session: session._id,
-    },
-    "refreshTokenPrivateKey"
-  );
+  const refreshToken = signJwt({
+    session: session._id,
+  });
 
   return refreshToken;
 };
@@ -26,7 +23,7 @@ export const signRefreshToken = async ({ userId }: { userId: string }) => {
 export const signAccessToken = (user: DocumentType<User>) => {
   const payload = user.toJSON();
 
-  const accessToken = signJwt(payload, "accessTokenPrivateKey");
+  const accessToken = signJwt(payload);
 
   return accessToken;
 };
