@@ -1,23 +1,32 @@
 import express from "express";
-import {
-  createUserHandler,
-  verifyUserHandler,
-} from "../controller/user.controller";
 import validateResource from "../middleware/validateResource";
 import { createUserSchema, verifyUserSchema } from "../schema/user.schema";
-import {
-  forgotPasswordHandler,
-  resetPasswordHandler,
-} from "./../controller/user.controller";
+
 import {
   forgotPasswordSchema,
   resetPasswordSchema,
 } from "./../schema/user.schema";
+import { createSessionSchema } from "../schema/auth.schema";
+import {
+  createSessionHandler,
+  createUserHandler,
+  forgotPasswordHandler,
+  resetPasswordHandler,
+  verifyUserHandler,
+} from "../controller/auth.controller";
 
 const router = express.Router();
 
-router.post("/", validateResource(createUserSchema), createUserHandler);
+// NOTE: Authentication Routes
+router.post("/signup", validateResource(createUserSchema), createUserHandler);
 
+router.post(
+  "/login",
+  validateResource(createSessionSchema),
+  createSessionHandler
+);
+
+// NOTE: Verification & Reset Password Routes
 router.post(
   "/verify/:id/:verificationCode",
   validateResource(verifyUserSchema),
