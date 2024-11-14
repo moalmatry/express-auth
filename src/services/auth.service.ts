@@ -3,6 +3,7 @@ import { User } from "../model/user.model";
 import { signJwt } from "../utils/jwt";
 import { createSessionHandler } from "../controller/auth.controller";
 import SessionModel from "../model/session.model";
+import log from "../utils/logger";
 
 export const createSession = async ({ userId }: { userId: string }) => {
   return SessionModel.create({ user: userId });
@@ -13,20 +14,18 @@ export const signRefreshToken = async ({ userId }: { userId: string }) => {
     userId,
   });
 
-  const refreshToken = signJwt(
-    {
-      session: session._id,
-    },
-    "refreshTokenPrivateKey"
-  );
+  const refreshToken = signJwt({
+    session: session._id,
+  });
 
   return refreshToken;
 };
 
 export const signAccessToken = (user: DocumentType<User>) => {
+  log.info(user.toJSON());
   const payload = user.toJSON();
 
-  const accessToken = signJwt(payload, "accessTokenPrivateKey");
+  const accessToken = signJwt(payload);
 
   return accessToken;
 };
