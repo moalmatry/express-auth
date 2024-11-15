@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 require('dotenv').config();
 import config from 'config';
 import express, { NextFunction, Request, Response } from 'express';
