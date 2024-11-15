@@ -1,9 +1,7 @@
 import { DocumentType } from "@typegoose/typegoose";
+import SessionModel from "../model/session.model";
 import { User } from "../model/user.model";
 import { signJwt } from "../utils/jwt";
-import { createSessionHandler } from "../controller/auth.controller";
-import SessionModel from "../model/session.model";
-import log from "../utils/logger";
 
 export const createSession = async ({ userId }: { userId: string }) => {
   return SessionModel.create({ user: userId });
@@ -22,7 +20,6 @@ export const signRefreshToken = async ({ userId }: { userId: string }) => {
 };
 
 export const signAccessToken = (user: DocumentType<User>) => {
-  log.info(user.toJSON());
   const payload = user.toJSON();
 
   const accessToken = signJwt(payload);

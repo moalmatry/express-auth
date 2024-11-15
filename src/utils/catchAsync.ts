@@ -1,15 +1,24 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextFunction, Request, Response } from "express";
 
-// Define a generic type for your async function
-type AsyncFunction<T> = (
-  req: Request,
+type AsyncFunction<P, ResBody, ReqBody, ReqQuery> = (
+  req: Request<P, ResBody, ReqBody, ReqQuery>,
   res: Response,
   next: NextFunction
-) => Promise<T>;
+) => Promise<void>;
 
-export default function <T>(fn: AsyncFunction<T>) {
-  return (req: Request, res: Response, next: NextFunction) => {
-    // Ensure that 'next' is a required parameter and handle async errors
+/** catch all errors in asynchronous function */
+export default function <
+  P = object,
+  ResBody = any,
+  ReqBody = any,
+  ReqQuery = any
+>(fn: AsyncFunction<P, ResBody, ReqBody, ReqQuery>) {
+  return (
+    req: Request<P, ResBody, ReqBody, ReqQuery>,
+    res: Response,
+    next: NextFunction
+  ) => {
     fn(req, res, next).catch((err) => next(err));
   };
 }

@@ -1,7 +1,9 @@
 class AppError extends Error {
+  /** if the status code is 400 will be fail 500 will be error */
   public statusCode: number;
-  public status: string;
-  public isOperational: boolean;
+  /** if the status code is 400 will be fail 500 will be error */
+  public status: "fail" | "error";
+  public isOperational?: boolean;
 
   constructor(message: string, statusCode: number) {
     super(message);

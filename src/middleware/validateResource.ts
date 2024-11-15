@@ -1,20 +1,20 @@
 import { NextFunction, Request, Response } from "express";
 import { z } from "zod";
+import AppError from "../utils/AppError";
 
 const validateResource =
   (schema: z.AnyZodObject) =>
   (req: Request, res: Response, next: NextFunction) => {
-    try {
-      schema.parseAsync({
+    schema
+      .parseAsync({
         body: req.body,
         query: req.query,
         params: req.params,
-      });
-      next();
-    } catch (error: any) {
-      res.status(400).json({ errors: error });
-      // next(error);
-    }
+      })
+      .catch((err) => {
+        next(new AppError(err.errors[0].message, 400));
+      })
+      .finally(() => next());
   };
 
 export default validateResource;

@@ -1,16 +1,27 @@
 require("dotenv").config();
-import express from "express";
 import config from "config";
+import express, { NextFunction, Request, Response } from "express";
+import router from "./routes";
+import AppError from "./utils/AppError";
 import connectToDb from "./utils/connectToDb";
 import log from "./utils/logger";
-import router from "./routes";
+import globalErrorHandler from "./controller/error.controller";
 
 const app = express();
 
-// NOTE: bodyParser alternative
+// bodyParser alternative
 app.use(express.json());
-app.use(router);
 
+// start routes
+app.use(router);
+// NOTE: this route will catch all undefined routes
+app.all("*", (req: Request, res: Response, next: NextFunction) => {
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+});
+
+app.use(globalErrorHandler);
+
+// Server configurations
 const port = config.get("port");
 
 app.listen(port, async () => {

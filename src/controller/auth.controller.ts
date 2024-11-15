@@ -1,64 +1,64 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
+import { nanoid } from "nanoid";
 import { CreateUserInput } from "../schema/auth.schema";
-import {
-  createUser,
-  findUserByEmail,
-  findUserById,
-} from "../services/user.service";
-import { signAccessToken, signRefreshToken } from "../services/auth.service";
-import sendEmail from "../utils/mailer";
 import {
   ForgotPasswordInput,
   ResetPasswordInput,
   VerifyUserInput,
 } from "../schema/user.schema";
+import { signAccessToken, signRefreshToken } from "../services/auth.service";
+import {
+  createUser,
+  findUserByEmail,
+  findUserById,
+} from "../services/user.service";
+import catchAsync from "../utils/catchAsync";
 import log from "../utils/logger";
-import { nanoid } from "nanoid";
-export const createSessionHandler = async (
-  req: Request<{}, {}, CreateUserInput>,
-  res: Response
-) => {
-  const { email, password } = req.body;
+import sendEmail from "../utils/mailer";
 
-  const user = await findUserByEmail(email);
+export const createSessionHandler = catchAsync(
+  async (req: Request<object, object, CreateUserInput>, res: Response) => {
+    const { email, password } = req.body;
 
-  if (!user) {
-    res.status(400).json({ message: "Invalid email or password" });
+    const user = await findUserByEmail(email);
+
+    if (!user) {
+      res.status(400).json({ message: "Invalid email or password" });
+      return;
+    }
+
+    if (!user.verified) {
+      res.status(400).json({ message: "Email not verified" });
+      return;
+    }
+
+    const isValid = await user.validatePassword(password);
+
+    if (!isValid) {
+      res.status(400).json({ message: "Invalid email or password" });
+      return;
+    }
+
+    // sign a access token
+    const accessToken = signAccessToken(user);
+
+    // sign refresh token
+    const refreshToken = await signRefreshToken({
+      userId: String(user._id),
+    });
+
+    // send tokens
+
+    res.status(200).json({ message: "Success", accessToken, refreshToken });
     return;
   }
+);
 
-  if (!user.verified) {
-    res.status(400).json({ message: "Email not verified" });
-    return;
-  }
-
-  const isValid = await user.validatePassword(password);
-
-  if (!isValid) {
-    res.status(400).json({ message: "Invalid email or password" });
-    return;
-  }
-
-  // sign a access token
-  const accessToken = signAccessToken(user);
-
-  // sign refresh token
-  const refreshToken = await signRefreshToken({
-    userId: String(user._id),
-  });
-
-  // send tokens
-
-  res.status(200).json({ message: "Success", accessToken, refreshToken });
-  return;
-};
-
-export const createUserHandler = async (
-  req: Request<{}, {}, CreateUserInput>,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
+export const createUserHandler = catchAsync(
+  async (
+    req: Request<object, object, CreateUserInput>,
+    res: Response
+  ): Promise<void> => {
     const { body } = req;
 
     const user = await createUser(body);
@@ -71,25 +71,25 @@ export const createUserHandler = async (
 
     res.status(201).json({ message: "User created successfully" });
     return;
-  } catch (e: any) {
-    if (e.code === 11000) {
-      res.status(400).json({
-        message: "Email already exists",
-      });
-      return;
-    }
+    // } catch (e: any) {
+    //   if (e.code === 11000) {
+    //     res.status(400).json({
+    //       message: "Email already exists",
+    //     });
+    //     return;
+    //   }
 
-    res.status(500).json({ message: e });
-    next(e);
-    return;
+    //   res.status(500).json({ message: e });
+    //   next(e);
+    //   return;
+    // }
   }
-};
+);
 
 export const verifyUserHandler = async (
   req: Request<VerifyUserInput>,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+  res: Response
+) => {
   const { id, verificationCode } = req.params;
 
   // try {
@@ -125,11 +125,8 @@ export const verifyUserHandler = async (
   // }
 };
 
-export const forgotPasswordHandler = async (
-  req: Request<{}, {}, ForgotPasswordInput>,
-  res: Response
-) => {
-  try {
+export const forgotPasswordHandler = catchAsync(
+  async (req: Request<object, object, ForgotPasswordInput>, res: Response) => {
     const { email } = req.body;
     const user = await findUserByEmail(email);
     if (!user) {
@@ -163,38 +160,42 @@ export const forgotPasswordHandler = async (
       message: "Email has been sent to your email. Please check your inbox.",
     });
     return;
-  } catch (error: any) {
-    res.status(400).json({ message: error.message });
-    return;
   }
-};
+);
 
-export const resetPasswordHandler = async (
-  req: Request<ResetPasswordInput["params"], {}, ResetPasswordInput["body"]>,
-  res: Response
-) => {
-  try {
-    const { id, passwordResetCode } = req.params;
-    const { password } = req.body;
-    const user = await findUserById(id);
+export const resetPasswordHandler = catchAsync(
+  async (
+    req: Request<
+      ResetPasswordInput["params"],
+      object,
+      ResetPasswordInput["body"]
+    >,
+    res: Response
+  ) => {
+    try {
+      const { id, passwordResetCode } = req.params;
+      const { password } = req.body;
+      const user = await findUserById(id);
 
-    if (
-      !user ||
-      !user.passwordRestCode ||
-      user.passwordRestCode !== passwordResetCode
-    ) {
-      res.status(400).json({ message: "Could not reset user password" });
+      if (
+        !user ||
+        !user.passwordRestCode ||
+        user.passwordRestCode !== passwordResetCode
+      ) {
+        res.status(400).json({ message: "Could not reset user password" });
+        return;
+      }
+
+      user.passwordRestCode = null;
+      user.password = password;
+      await user.save();
+
+      res.status(200).json({ message: "Password updated successfully" });
+      return;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
       return;
     }
-
-    user.passwordRestCode = null;
-    user.password = password;
-    await user.save();
-
-    res.status(200).json({ message: "Password updated successfully" });
-    return;
-  } catch (error: any) {
-    res.status(400).json({ message: error.message });
-    return;
   }
-};
+);
