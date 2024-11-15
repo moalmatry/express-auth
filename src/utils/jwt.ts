@@ -1,10 +1,7 @@
-import Jwt from "jsonwebtoken";
-import config from "config";
+import Jwt from 'jsonwebtoken';
+import config from 'config';
 
-export const signJwt = (
-  object: Object,
-  options?: Jwt.SignOptions | undefined
-) => {
+export const signJwt = (object: Object, options?: Jwt.SignOptions | undefined) => {
   return Jwt.sign(object, process.env.JWT_SECRET!, {
     ...(options && options),
   });

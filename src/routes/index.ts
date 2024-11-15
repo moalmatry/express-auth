@@ -1,15 +1,15 @@
-import express, { Request, Response, Router } from "express";
-import user from "./user.routes";
+import express, { Request, Response, Router } from 'express';
+import user from './user.routes';
 
-import log from "../utils/logger";
+import log from '../utils/logger';
 
 const router: Router = express.Router();
 
-router.get("/healthCheck", (_: Request, res: Response) => {
-  log.info("The Api is Working");
+router.get('/healthCheck', (_: Request, res: Response) => {
+  log.info('The Api is Working');
   res.sendStatus(200);
 });
 
-router.use("/api/users", user);
+router.use('/api/users', user);
 
 export default router;

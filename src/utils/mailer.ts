@@ -1,6 +1,6 @@
-import nodemailer, { SendMailOptions } from "nodemailer";
-import config from "config";
-import log from "./logger";
+import nodemailer, { SendMailOptions } from 'nodemailer';
+import config from 'config';
+import log from './logger';
 
 // Create test emails
 // const createTestCreds = async () => {
@@ -17,7 +17,7 @@ const smtp = config.get<{
   host: string;
   port: number;
   secure: boolean;
-}>("smtp");
+}>('smtp');
 
 const transporter = nodemailer.createTransport({
   ...smtp,
@@ -27,7 +27,7 @@ const transporter = nodemailer.createTransport({
 const sendEmail = async (payload: SendMailOptions) => {
   transporter.sendMail(payload, (error, info) => {
     if (error) {
-      return log.error(error, "Error sending email");
+      return log.error(error, 'Error sending email');
     }
 
     log.info(`Email sent: ${nodemailer.getTestMessageUrl(info)}`);

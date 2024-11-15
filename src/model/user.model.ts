@@ -1,19 +1,11 @@
-import {
-  DocumentType,
-  getModelForClass,
-  index,
-  modelOptions,
-  pre,
-  prop,
-  Severity,
-} from "@typegoose/typegoose";
-import argon2 from "argon2";
+import { DocumentType, getModelForClass, index, modelOptions, pre, prop, Severity } from '@typegoose/typegoose';
+import argon2 from 'argon2';
 // FIXME: nanoid version 5 is making error
-import { nanoid } from "nanoid";
-import log from "../utils/logger";
+import { nanoid } from 'nanoid';
+import log from '../utils/logger';
 
-@pre<User>("save", async function () {
-  if (!this.isModified("password")) return;
+@pre<User>('save', async function () {
+  if (!this.isModified('password')) return;
 
   const hash = await argon2.hash(this.password);
 
@@ -25,7 +17,7 @@ import log from "../utils/logger";
 @modelOptions({
   schemaOptions: {
     timestamps: true,
-    collection: "users",
+    collection: 'users',
   },
   options: {
     allowMixed: Severity.ALLOW,
@@ -57,7 +49,7 @@ export class User {
     try {
       return await argon2.verify(this.password, candidatePassword);
     } catch (error) {
-      log.error(error, "Could not validate password");
+      log.error(error, 'Could not validate password');
 
       return false;
     }

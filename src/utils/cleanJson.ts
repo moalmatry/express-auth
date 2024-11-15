@@ -1,6 +1,6 @@
 export default function cleanAndFormatJSON(input: string): string {
   // Remove unwanted characters
-  const cleanedInput = input.replace(/[^a-zA-Z0-9{}[\]":,.\s]/g, "");
+  const cleanedInput = input.replace(/[^a-zA-Z0-9{}[\]":,.\s]/g, '');
 
   // Parse the cleaned string into a JSON object
   const jsonObject = JSON.parse(cleanedInput);
