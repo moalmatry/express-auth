@@ -1,8 +1,8 @@
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import AppError from '../utils/AppError';
 
 /** this method handler to catch all errors in all the app */
-const globalErrorHandler = (err: AppError, req: Request, res: Response, Next: NextFunction) => {
+const globalErrorHandler = (err: AppError, req: Request, res: Response) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
   res.status(err.statusCode).json({

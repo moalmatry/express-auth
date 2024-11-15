@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { nanoid } from 'nanoid';
 import { CreateUserInput } from '../schema/auth.schema';
 import { ForgotPasswordInput, ResetPasswordInput, VerifyUserInput } from '../schema/user.schema';
@@ -7,42 +7,42 @@ import { createUser, findUserByEmail, findUserById } from '../services/user.serv
 import catchAsync from '../utils/catchAsync';
 import log from '../utils/logger';
 import sendEmail from '../utils/mailer';
+import AppError from '../utils/AppError';
 
-export const createSessionHandler = catchAsync(async (req: Request<object, object, CreateUserInput>, res: Response) => {
-  const { email, password } = req.body;
+export const createSessionHandler = catchAsync(
+  async (req: Request<object, object, CreateUserInput>, res: Response, next: NextFunction) => {
+    const { email, password } = req.body;
 
-  const user = await findUserByEmail(email);
+    const user = await findUserByEmail(email);
 
-  if (!user) {
-    res.status(400).json({ message: 'Invalid email or password' });
+    if (!user) {
+      return next(new AppError('Invalid email or password', 400));
+    }
+
+    if (!user.verified) {
+      return next(new AppError('Email not verified', 400));
+    }
+
+    const isValid = await user.validatePassword(password);
+
+    if (!isValid) {
+      return next(new AppError('Invalid email or password', 400));
+    }
+
+    // sign a access token
+    const accessToken = signAccessToken(user);
+
+    // sign refresh token
+    const refreshToken = await signRefreshToken({
+      userId: String(user._id),
+    });
+
+    // send tokens
+
+    res.status(200).json({ message: 'Success', accessToken, refreshToken });
     return;
-  }
-
-  if (!user.verified) {
-    res.status(400).json({ message: 'Email not verified' });
-    return;
-  }
-
-  const isValid = await user.validatePassword(password);
-
-  if (!isValid) {
-    res.status(400).json({ message: 'Invalid email or password' });
-    return;
-  }
-
-  // sign a access token
-  const accessToken = signAccessToken(user);
-
-  // sign refresh token
-  const refreshToken = await signRefreshToken({
-    userId: String(user._id),
-  });
-
-  // send tokens
-
-  res.status(200).json({ message: 'Success', accessToken, refreshToken });
-  return;
-});
+  },
+);
 
 export const createUserHandler = catchAsync(
   async (req: Request<object, object, CreateUserInput>, res: Response): Promise<void> => {
@@ -73,57 +73,51 @@ export const createUserHandler = catchAsync(
   },
 );
 
-export const verifyUserHandler = async (req: Request<VerifyUserInput>, res: Response) => {
-  const { id, verificationCode } = req.params;
+export const verifyUserHandler = catchAsync(
+  async (req: Request<VerifyUserInput>, res: Response, next: NextFunction) => {
+    const { id, verificationCode } = req.params;
 
-  // try {
-  // Find the user by id
-  const user = await findUserById(id);
+    // try {
+    // Find the user by id
+    const user = await findUserById(id);
 
-  if (!user) {
-    res.status(404).json({ message: 'Could not verify user' });
-    return;
-  }
+    if (!user) {
+      return next(new AppError('Could not verify user', 400));
+    }
 
-  // Check to see if they are already verified
-  if (user.verified) {
-    res.status(404).json({ message: 'User is already verified' });
-    return;
-  }
+    // Check to see if they are already verified
+    if (user.verified) {
+      return next(new AppError('Email already verified', 400));
+    }
 
-  // Check to see if the verification code matches
-  if (user.verificationCode === verificationCode) {
-    user.verified = true;
-    await user.save();
+    // Check to see if the verification code matches
+    if (user.verificationCode === verificationCode) {
+      user.verified = true;
+      await user.save();
 
-    res.status(200).json({ message: 'User verified successfully' });
-    return;
-  } else {
-    res.status(400).json({ message: 'Invalid verification code or something went wrong' });
-    return;
-  }
-  // } catch (error: any) {
-  //   res.status(400).json({ message: "Invalid verification code or user" });
-  // }
-};
+      res.status(200).json({ message: 'User verified successfully' });
+      return;
+    } else {
+      return next(new AppError('Invalid verification code or something went wrong', 400));
+    }
+  },
+);
 
 export const forgotPasswordHandler = catchAsync(
-  async (req: Request<object, object, ForgotPasswordInput>, res: Response) => {
+  async (req: Request<object, object, ForgotPasswordInput>, res: Response, next: NextFunction) => {
     const { email } = req.body;
     const user = await findUserByEmail(email);
     if (!user) {
-      log.debug(`User with email ${email} does't exist.`);
+      // log.debug(`User with email ${email} does't exist.`);
       res.status(200).json({
+        status: 'success',
         message: 'Email has been sent to your email. Please check your inbox.',
       });
       return;
     }
 
     if (!user.verified) {
-      res.status(400).json({
-        message: 'User is not verified. Please verify your email first.',
-      });
-      return;
+      return next(new AppError('User is not verified. Please verify your email first.', 400));
     }
 
     const passwordResetCode = nanoid();
@@ -139,6 +133,7 @@ export const forgotPasswordHandler = catchAsync(
     });
     log.debug(`Password reset code sent to ${email}`);
     res.status(200).json({
+      status: 'success',
       message: 'Email has been sent to your email. Please check your inbox.',
     });
     return;
@@ -146,27 +141,24 @@ export const forgotPasswordHandler = catchAsync(
 );
 
 export const resetPasswordHandler = catchAsync(
-  async (req: Request<ResetPasswordInput['params'], object, ResetPasswordInput['body']>, res: Response) => {
-    try {
-      const { id, passwordResetCode } = req.params;
-      const { password } = req.body;
-      const user = await findUserById(id);
+  async (
+    req: Request<ResetPasswordInput['params'], object, ResetPasswordInput['body']>,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    const { id, passwordResetCode } = req.params;
+    const { password } = req.body;
+    const user = await findUserById(id);
 
-      if (!user || !user.passwordRestCode || user.passwordRestCode !== passwordResetCode) {
-        res.status(400).json({ message: 'Could not reset user password' });
-        return;
-      }
-
-      user.passwordRestCode = null;
-      user.password = password;
-      await user.save();
-
-      res.status(200).json({ message: 'Password updated successfully' });
-      return;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      res.status(400).json({ message: error.message });
-      return;
+    if (!user || !user.passwordRestCode || user.passwordRestCode !== passwordResetCode) {
+      return next(new AppError('Could not reset user password', 400));
     }
+
+    user.passwordRestCode = null;
+    user.password = password;
+    await user.save();
+
+    res.status(200).json({ status: 'success', message: 'Password updated successfully' });
+    return;
   },
 );
