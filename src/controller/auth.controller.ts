@@ -45,31 +45,32 @@ export const createSessionHandler = catchAsync(
 );
 
 export const createUserHandler = catchAsync(
-  async (req: Request<object, object, CreateUserInput>, res: Response): Promise<void> => {
+  async (req: Request<object, object, CreateUserInput>, res: Response, next: NextFunction): Promise<void> => {
     const { body } = req;
+    try {
+      const user = await createUser(body);
+      await sendEmail({
+        from: 'test@example.com',
+        to: user.email,
+        subject: 'Please verify your email',
+        text: `Please click on the link to verify your email code is :${user.verificationCode} user-Id: ${user._id}`,
+      });
 
-    const user = await createUser(body);
-    await sendEmail({
-      from: 'test@example.com',
-      to: user.email,
-      subject: 'Please verify your email',
-      text: `Please click on the link to verify your email code is :${user.verificationCode} user-Id: ${user._id}`,
-    });
+      res.status(201).json({ message: 'User created successfully' });
+      return;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      if (e.code === 11000) {
+        res.status(400).json({
+          message: 'Email already exists',
+        });
+        return;
+      }
 
-    res.status(201).json({ message: 'User created successfully' });
-    return;
-    // } catch (e: any) {
-    //   if (e.code === 11000) {
-    //     res.status(400).json({
-    //       message: "Email already exists",
-    //     });
-    //     return;
-    //   }
-
-    //   res.status(500).json({ message: e });
-    //   next(e);
-    //   return;
-    // }
+      res.status(500).json({ message: e });
+      next(e);
+      return;
+    }
   },
 );
 
