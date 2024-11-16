@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 require('dotenv').config();
 import config from 'config';
@@ -25,7 +26,26 @@ app.use(globalErrorHandler);
 // Server configurations
 const port = config.get('port');
 
-app.listen(port, async () => {
+const server = app.listen(port, async () => {
   log.info(`Listening on port http://localhost:${port}`);
   connectToDb();
 });
+
+////////////////////////////////////////////////////////////////////////////
+/* handle Unhandled Rejection  */
+process.on('unhandledRejection', (err: any) => {
+  log.error(err);
+  log.error('Unhandled Rejection 💥 shutting down.....');
+
+  server.close(() => {
+    process.exit(1);
+  });
+});
+/* handle Uncaught Exception  */
+process.on('uncaughtException', (err: any) => {
+  log.error(err);
+  log.error('Uncaught Exception 💥 shutting down.....');
+  process.exit(1);
+});
+
+export default app;
