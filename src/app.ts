@@ -17,7 +17,7 @@ app.use(express.json());
 app.use(router);
 // NOTE: this route will catch all undefined routes
 app.all('*', (req: Request, res: Response, next: NextFunction) => {
-  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+  next(new AppError(`Can't find on this server! ${req.originalUrl}`, 404));
 });
 
 app.use(globalErrorHandler);
