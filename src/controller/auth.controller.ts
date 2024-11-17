@@ -1,16 +1,23 @@
 import { NextFunction, Request, Response } from 'express';
 import { nanoid } from 'nanoid';
-import { CreateUserInput } from '../schema/auth.schema';
-import { ForgotPasswordInput, ResetPasswordInput, VerifyUserInput } from '../schema/user.schema';
+import { CreateLoginInput } from '../schema/auth.schema';
+import { CreateUserInput, ForgotPasswordInput, ResetPasswordInput, VerifyUserInput } from '../schema/user.schema';
 import { signAccessToken, signRefreshToken } from '../services/auth.service';
-import { createUser, findUserByEmail, findUserById } from '../services/user.service';
+import {
+  createUser,
+  findUserByEmail,
+  findUserById,
+  updatePassword,
+  updatePasswordResetCode,
+  verifyEmail,
+} from '../services/user.service';
+import AppError from '../utils/AppError';
 import catchAsync from '../utils/catchAsync';
 import log from '../utils/logger';
 import sendEmail from '../utils/mailer';
-import AppError from '../utils/AppError';
 
 export const createSessionHandler = catchAsync(
-  async (req: Request<object, object, CreateUserInput>, res: Response, next: NextFunction) => {
+  async (req: Request<object, object, CreateLoginInput>, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
 
     const user = await findUserByEmail(email);
@@ -34,7 +41,7 @@ export const createSessionHandler = catchAsync(
 
     // sign refresh token
     const refreshToken = await signRefreshToken({
-      userId: String(user._id),
+      userId: String(user.id),
     });
 
     // send tokens
@@ -43,17 +50,17 @@ export const createSessionHandler = catchAsync(
     return;
   },
 );
-
+// NOTE: this done
 export const createUserHandler = catchAsync(
-  async (req: Request<object, object, CreateUserInput>, res: Response, _next: NextFunction): Promise<void> => {
+  async (req: Request<object, object, CreateUserInput>, res: Response, next: NextFunction): Promise<void> => {
     const { body } = req;
     // try {
     const user = await createUser(body);
     await sendEmail({
       from: 'test@example.com',
-      to: user.email,
+      to: user?.email,
       subject: 'Please verify your email',
-      text: `Please click on the link to verify your email code is :${user.verificationCode} user-Id: ${user._id}`,
+      text: `Please click on the link to verify your email code is :${user?.verificationCode} user-Id: ${user?.id}`,
     });
 
     res.status(201).json({ message: 'User created successfully' });
@@ -74,6 +81,7 @@ export const createUserHandler = catchAsync(
   },
 );
 
+// NOTE: this done
 export const verifyUserHandler = catchAsync(
   async (req: Request<VerifyUserInput>, res: Response, next: NextFunction) => {
     const { id, verificationCode } = req.params;
@@ -93,9 +101,7 @@ export const verifyUserHandler = catchAsync(
 
     // Check to see if the verification code matches
     if (user.verificationCode === verificationCode) {
-      user.verified = true;
-      await user.save();
-
+      await verifyEmail(id);
       res.status(200).json({ message: 'User verified successfully' });
       return;
     } else {
@@ -123,14 +129,15 @@ export const forgotPasswordHandler = catchAsync(
 
     const passwordResetCode = nanoid();
 
-    user.passwordRestCode = passwordResetCode;
-    await user.save();
+    // user.passwordRestCode = passwordResetCode;
+    // await user.save();
+    await updatePasswordResetCode(user.id, passwordResetCode);
 
     await sendEmail({
       from: 'test@example.com',
       to: user.email,
       subject: 'Password Reset Request',
-      text: `User id is: ${user._id} ,Password reset code: ${passwordResetCode}`,
+      text: `User id is: ${user.id} ,Password reset code: ${passwordResetCode}`,
     });
     log.debug(`Password reset code sent to ${email}`);
     res.status(200).json({
@@ -155,9 +162,11 @@ export const resetPasswordHandler = catchAsync(
       return next(new AppError('Could not reset user password', 400));
     }
 
-    user.passwordRestCode = null;
-    user.password = password;
-    await user.save();
+    // user.passwordRestCode = null;
+    updatePasswordResetCode(id, null);
+    // user.password = password;
+    updatePassword(user.id, password);
+    // await user.save();
 
     res.status(200).json({ status: 'success', message: 'Password updated successfully' });
     return;

@@ -5,7 +5,7 @@ import config from 'config';
 import express, { NextFunction, Request, Response } from 'express';
 import router from './routes';
 import AppError from './utils/AppError';
-import connectToDb from './utils/connectToDb';
+// import connectToDb from './utils/connectToDb';
 import log from './utils/logger';
 import globalErrorHandler from './controller/error.controller';
 
@@ -28,7 +28,7 @@ const port = config.get('port');
 
 const server = app.listen(port, async () => {
   log.info(`Listening on port http://localhost:${port}`);
-  connectToDb();
+  // connectToDb();
 });
 
 ////////////////////////////////////////////////////////////////////////////

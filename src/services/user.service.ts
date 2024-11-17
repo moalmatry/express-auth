@@ -1,13 +1,82 @@
-import UserModal, { User } from '../model/user.model';
+import { User } from '@prisma/client';
+import { db } from '../db';
 
-export const createUser = (input: Partial<User>) => {
-  return UserModal.create(input);
+export const createUser = async (input: Partial<User>) => {
+  const dbUser = await db.user.findFirst({
+    where: {
+      id: input.email,
+    },
+  });
+
+  if (!dbUser) {
+    const user = await db.user.create({
+      data: {
+        id: input.id,
+        email: input.email!,
+        firstName: input.firstName!,
+        lastName: input.lastName!,
+        password: input.password!,
+        verified: false,
+        verificationCode: undefined,
+        passwordRestCode: null,
+      },
+    });
+
+    return user;
+  }
 };
 
-export const findUserById = (id: string) => {
-  return UserModal.findById(id);
+export const findUserById = async (id: string) => {
+  const user = await db.user.findFirst({
+    where: {
+      id,
+    },
+  });
+
+  return user;
 };
 
-export const findUserByEmail = (email: string) => {
-  return UserModal.findOne({ email });
+export const verifyEmail = async (id: string) => {
+  await db.user.update({
+    where: {
+      id,
+    },
+    data: {
+      verified: true,
+    },
+  });
+};
+
+export const findUserByEmail = async (email: string) => {
+  // return UserModal.findOne({ email });
+
+  const user = await db.user.findFirst({
+    where: {
+      email,
+    },
+  });
+
+  return user;
+};
+
+export const updatePasswordResetCode = async (id: string, passwordRestCode: string | null) => {
+  await db.user.update({
+    where: {
+      id,
+    },
+    data: {
+      passwordRestCode,
+    },
+  });
+};
+
+export const updatePassword = async (id: string, password: string) => {
+  await db.user.update({
+    where: {
+      id,
+    },
+    data: {
+      password: password,
+    },
+  });
 };
