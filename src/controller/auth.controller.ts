@@ -12,7 +12,7 @@ import {
 } from '../services/user.service';
 import AppError from '../utils/AppError';
 import catchAsync from '../utils/catchAsync';
-import { signJWT } from '../utils/jwt';
+import { correctPassword, signJWT } from '../utils/jwt';
 import log from '../utils/logger';
 import sendEmail from '../utils/mailer';
 
@@ -23,30 +23,19 @@ export const login = catchAsync(
     const user = await findUserByEmail(email);
 
     if (!user) {
-      return next(new AppError('Invalid email or password', 400));
+      return next(new AppError('Invalid email or password', 401));
     }
 
     if (!user.verified) {
       return next(new AppError('Email not verified', 400));
     }
+    const isCorrect = await correctPassword(password, user.password);
 
-    // const isValid = await user.validatePassword(password);
-
-    // if (!isValid) {
-    //   return next(new AppError('Invalid email or password', 400));
-    // }
-
-    // sign a access token
-    // const accessToken = signAccessToken(user);
-
-    // sign refresh token
-    // const refreshToken = await signRefreshToken({
-    //   userId: String(user.id),
-    // });
-
+    if (!isCorrect) {
+      return next(new AppError('Invalid email or password', 401));
+    }
     // send tokens
-
-    const token = '';
+    const token = signJWT(user?.id as string);
     res.status(200).json({ status: 'success', token });
     return;
   },

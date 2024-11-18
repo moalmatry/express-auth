@@ -8,6 +8,6 @@ export const getAllUsers = catchAsync(async (req: Request, res: Response, next: 
   res.status(200).json({
     status: 'success',
     results: users.length,
-    data: users,
+    data: { users },
   });
 });

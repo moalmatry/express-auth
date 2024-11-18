@@ -2,6 +2,7 @@ import { User } from '@prisma/client';
 import { db } from '../db';
 import argon2 from 'argon2';
 
+/** @description create user in database & hash password */
 export const createUser = async (input: Partial<User>) => {
   const hashedPassword = await argon2.hash(input.password!);
 
@@ -27,7 +28,7 @@ export const createUser = async (input: Partial<User>) => {
     return user;
   }
 };
-
+/** @description find user by id */
 export const findUserById = async (id: string) => {
   const user = await db.user.findFirst({
     where: {
@@ -37,7 +38,7 @@ export const findUserById = async (id: string) => {
 
   return user;
 };
-
+/** @description find user by id and set verified:true  */
 export const verifyEmail = async (id: string) => {
   await db.user.update({
     where: {
@@ -48,7 +49,7 @@ export const verifyEmail = async (id: string) => {
     },
   });
 };
-
+/** @description find user by email and return user data  */
 export const findUserByEmail = async (email: string) => {
   // return UserModal.findOne({ email });
 
@@ -61,6 +62,7 @@ export const findUserByEmail = async (email: string) => {
   return user;
 };
 
+/** @description find user by id and update password rest code  */
 export const updatePasswordResetCode = async (id: string, passwordRestCode: string | null) => {
   await db.user.update({
     where: {
@@ -71,7 +73,7 @@ export const updatePasswordResetCode = async (id: string, passwordRestCode: stri
     },
   });
 };
-
+/** @description find user by id and update password */
 export const updatePassword = async (id: string, password: string) => {
   const hashedPassword = await argon2.hash(password!);
 
@@ -84,7 +86,7 @@ export const updatePassword = async (id: string, password: string) => {
     },
   });
 };
-
+/** @description return all users  */
 export const getUsers = async () => {
   const allUsers = await db.user.findMany({
     select: {
