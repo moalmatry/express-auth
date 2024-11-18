@@ -8,12 +8,18 @@ import AppError from './utils/AppError';
 // import connectToDb from './utils/connectToDb';
 import log from './utils/logger';
 import globalErrorHandler from './controller/error.controller';
+import { CustomRequest } from './types';
 
 const app = express();
 
 // bodyParser alternative
 app.use(express.json());
 
+app.use((req: CustomRequest, res, next) => {
+  req.requestTime = new Date().toISOString();
+  // console.log(req.headers);
+  next();
+});
 // start routes
 app.use(router);
 // NOTE: this route will catch all undefined routes
