@@ -20,7 +20,6 @@ export const createUser = async (input: Partial<User>) => {
         lastName: input.lastName!,
         password: hashedPassword,
         verified: false,
-        verificationCode: undefined,
         passwordRestCode: null,
       },
     });
@@ -84,4 +83,20 @@ export const updatePassword = async (id: string, password: string) => {
       password: hashedPassword,
     },
   });
+};
+
+export const getUsers = async () => {
+  const allUsers = await db.user.findMany({
+    select: {
+      firstName: true,
+      lastName: true,
+      email: true,
+      verified: true,
+      createdAt: true,
+      password: false,
+      verificationCode: false,
+    },
+  });
+
+  return allUsers;
 };

@@ -2,7 +2,6 @@ import { NextFunction, Request, Response } from 'express';
 import { nanoid } from 'nanoid';
 import { CreateLoginInput } from '../schema/auth.schema';
 import { CreateUserInput, ForgotPasswordInput, ResetPasswordInput, VerifyUserInput } from '../schema/user.schema';
-import { signAccessToken, signRefreshToken } from '../services/auth.service';
 import {
   createUser,
   findUserByEmail,
@@ -13,10 +12,11 @@ import {
 } from '../services/user.service';
 import AppError from '../utils/AppError';
 import catchAsync from '../utils/catchAsync';
+import { signJWT } from '../utils/jwt';
 import log from '../utils/logger';
 import sendEmail from '../utils/mailer';
 
-export const createSessionHandler = catchAsync(
+export const login = catchAsync(
   async (req: Request<object, object, CreateLoginInput>, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
 
@@ -30,32 +30,34 @@ export const createSessionHandler = catchAsync(
       return next(new AppError('Email not verified', 400));
     }
 
-    const isValid = await user.validatePassword(password);
+    // const isValid = await user.validatePassword(password);
 
-    if (!isValid) {
-      return next(new AppError('Invalid email or password', 400));
-    }
+    // if (!isValid) {
+    //   return next(new AppError('Invalid email or password', 400));
+    // }
 
     // sign a access token
-    const accessToken = signAccessToken(user);
+    // const accessToken = signAccessToken(user);
 
     // sign refresh token
-    const refreshToken = await signRefreshToken({
-      userId: String(user.id),
-    });
+    // const refreshToken = await signRefreshToken({
+    //   userId: String(user.id),
+    // });
 
     // send tokens
 
-    res.status(200).json({ message: 'Success', accessToken, refreshToken });
+    const token = '';
+    res.status(200).json({ status: 'success', token });
     return;
   },
 );
-// NOTE: this done
-export const createUserHandler = catchAsync(
+
+export const signup = catchAsync(
   async (req: Request<object, object, CreateUserInput>, res: Response, next: NextFunction): Promise<void> => {
     const { body } = req;
-    // try {
+    // create user
     const user = await createUser(body);
+    // send verification email
     await sendEmail({
       from: 'test@example.com',
       to: user?.email,
@@ -63,25 +65,24 @@ export const createUserHandler = catchAsync(
       text: `Please click on the link to verify your email code is :${user?.verificationCode} user-Id: ${user?.id}`,
     });
 
-    res.status(201).json({ message: 'User created successfully' });
-    return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    // } catch (e: any) {
-    //   if (e.code === 11000) {
-    //     res.status(400).json({
-    //       message: 'Email already exists',
-    //     });
-    //     return;
-    //   }
+    // create token
+    const token = signJWT(user?.id as string);
 
-    //   res.status(500).json({ message: e });
-    //   next(e);
-    //   return;
-    // }
+    res.status(201).json({
+      status: 'success',
+      token,
+      data: {
+        firstName: user?.firstName,
+        lastName: user?.lastName,
+        email: user?.email,
+        verificationCode: user?.verificationCode,
+        createdAt: user?.createdAt,
+      },
+    });
+    return;
   },
 );
 
-// NOTE: this done
 export const verifyUserHandler = catchAsync(
   async (req: Request<VerifyUserInput>, res: Response, next: NextFunction) => {
     const { id, verificationCode } = req.params;
