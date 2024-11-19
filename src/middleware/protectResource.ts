@@ -3,9 +3,10 @@ import { findUserById } from '../services/user.service';
 import AppError from '../utils/AppError';
 import catchAsync from '../utils/catchAsync';
 import { changedPasswordAfter, verifyJwt } from '../utils/jwt';
+import { CustomRequest } from '../types';
 
 /** @description middleware that protects private resources  */
-export const protect = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+export const protect = catchAsync(async (req: CustomRequest, _res: Response, next: NextFunction) => {
   // 1) Getting token and check of it's there
   let token;
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
@@ -36,6 +37,6 @@ export const protect = catchAsync(async (req: Request, res: Response, next: Next
 
   // Access protected route
 
-  // const req.user = freshUser
+  req.user = freshUser;
   next();
 });

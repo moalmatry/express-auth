@@ -13,6 +13,7 @@ import {
 } from '../controller/auth.controller';
 import { getAllUsers } from '../controller/user.controller';
 import { protect } from '../middleware/protectResource';
+import { restrictTo } from '../middleware/restrictTo';
 
 const router = express.Router();
 
@@ -29,6 +30,6 @@ router.post('/forgot-password', validateResource(forgotPasswordSchema), forgotPa
 router.post('/reset-password/:id/:passwordResetCode', validateResource(resetPasswordSchema), resetPasswordHandler);
 
 // NOTE: Start admin routes
-router.get('/', protect, getAllUsers);
+router.get('/', protect, restrictTo('ADMIN'), getAllUsers);
 
 export default router;

@@ -29,5 +29,6 @@ model User {
 
 enum Role {
   USER
-  Admin
+  ADMIN
+  EMPLOYEE
 }

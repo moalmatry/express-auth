@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextFunction, Request, Response } from 'express';
+import { CustomRequest } from '../types';
 
 type AsyncFunction<P, ResBody, ReqBody, ReqQuery> = (
-  req: Request<P, ResBody, ReqBody, ReqQuery>,
+  req: Request<P, ResBody, ReqBody, ReqQuery> | any,
   res: Response,
   next: NextFunction,
 ) => Promise<void>;

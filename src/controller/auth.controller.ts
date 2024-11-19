@@ -22,7 +22,6 @@ import sendEmail from '../utils/mailer';
 export const login = catchAsync(
   async (req: Request<object, object, CreateLoginInput>, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
-
     const user = await findUserByEmail(email);
 
     if (!user) {
