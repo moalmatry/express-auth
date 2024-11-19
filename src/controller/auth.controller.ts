@@ -15,6 +15,7 @@ import catchAsync from '../utils/catchAsync';
 import { correctPassword, signJWT } from '../utils/jwt';
 import log from '../utils/logger';
 import sendEmail from '../utils/mailer';
+import argon2 from 'argon2';
 
 /** @description login controller that returns token if it success
  *  @example res.status(200).json({ status: 'success', token });
@@ -153,10 +154,11 @@ export const forgotPasswordHandler = catchAsync(
     }
 
     const passwordResetCode = nanoid();
+    const hashedPassword = await argon2.hash(passwordResetCode);
 
     // user.passwordRestCode = passwordResetCode;
     // await user.save();
-    await updatePasswordResetCode(user.id, passwordResetCode);
+    await updatePasswordResetCode(user.id, hashedPassword);
 
     await sendEmail({
       from: 'test@example.com',
@@ -186,7 +188,8 @@ export const resetPasswordHandler = catchAsync(
     const { password } = req.body;
     const user = await findUserById(id);
 
-    if (!user || !user.passwordRestCode || user.passwordRestCode !== passwordResetCode) {
+    const correctResetCode = await correctPassword(passwordResetCode, user?.passwordRestCode as string);
+    if (!user || !user.passwordRestCode || !correctResetCode) {
       return next(new AppError('Could not reset user password', 400));
     }
 

@@ -11,7 +11,7 @@ import {
   resetPasswordHandler,
   verifyUserHandler,
 } from '../controller/auth.controller';
-import { getAllUsers } from '../controller/user.controller';
+import { getAllUsersHandler } from '../controller/user.controller';
 import { protect } from '../middleware/protectResource';
 import { restrictTo } from '../middleware/restrictTo';
 
@@ -30,6 +30,6 @@ router.post('/forgot-password', validateResource(forgotPasswordSchema), forgotPa
 router.post('/reset-password/:id/:passwordResetCode', validateResource(resetPasswordSchema), resetPasswordHandler);
 
 // NOTE: Start admin routes
-router.get('/', protect, restrictTo('ADMIN', 'EMPLOYEE'), getAllUsers);
+router.get('/', protect, restrictTo('ADMIN', 'EMPLOYEE'), getAllUsersHandler);
 
 export default router;
