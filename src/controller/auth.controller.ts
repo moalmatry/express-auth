@@ -16,6 +16,9 @@ import { correctPassword, signJWT } from '../utils/jwt';
 import log from '../utils/logger';
 import sendEmail from '../utils/mailer';
 
+/** @description login controller that returns token if it success
+ *  @example res.status(200).json({ status: 'success', token });
+ */
 export const login = catchAsync(
   async (req: Request<object, object, CreateLoginInput>, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
@@ -40,7 +43,21 @@ export const login = catchAsync(
     return;
   },
 );
-
+/** @description signup controller that returns token if it success  and also returns user data
+ * @example  
+ * res.status(201).json({
+      status: 'success',
+      token,
+      data: {
+        firstName: "Mohamed",
+        lastName: "Almatry",
+        email: "test@test.com",
+        verificationCode: "xxxxxxxxxxxxxxxxxxx",
+        createdAt: "2024-14-10",
+      },
+    });
+ * 
+*/
 export const signup = catchAsync(
   async (req: Request<object, object, CreateUserInput>, res: Response, next: NextFunction): Promise<void> => {
     const { body } = req;
@@ -71,7 +88,15 @@ export const signup = catchAsync(
     return;
   },
 );
-
+/** @description  sends email to users to verify your email 
+ * @example  res.status(200).json({
+        status: 'success',
+        data: {
+          message: 'User verified successfully',
+        },
+      });
+ * 
+*/
 export const verifyUserHandler = catchAsync(
   async (req: Request<VerifyUserInput>, res: Response, next: NextFunction) => {
     const { id, verificationCode } = req.params;
@@ -92,14 +117,25 @@ export const verifyUserHandler = catchAsync(
     // Check to see if the verification code matches
     if (user.verificationCode === verificationCode) {
       await verifyEmail(id);
-      res.status(200).json({ message: 'User verified successfully' });
+      res.status(200).json({
+        status: 'success',
+        data: {
+          message: 'User verified successfully',
+        },
+      });
       return;
     } else {
       return next(new AppError('Invalid verification code or something went wrong', 400));
     }
   },
 );
-
+/** @description sends email to users to request rest password
+ * @example  
+ * res.status(200).json({
+        status: 'success',
+        message: 'Email has been sent to your email. Please check your inbox.',
+      });
+ */
 export const forgotPasswordHandler = catchAsync(
   async (req: Request<object, object, ForgotPasswordInput>, res: Response, next: NextFunction) => {
     const { email } = req.body;
@@ -137,7 +173,10 @@ export const forgotPasswordHandler = catchAsync(
     return;
   },
 );
-
+/** @description reset user password
+ * @example
+ *    res.status(200).json({ status: 'success', message: 'Password updated successfully' });
+ */
 export const resetPasswordHandler = catchAsync(
   async (
     req: Request<ResetPasswordInput['params'], object, ResetPasswordInput['body']>,

@@ -4,6 +4,7 @@ import AppError from '../utils/AppError';
 import catchAsync from '../utils/catchAsync';
 import { changedPasswordAfter, verifyJwt } from '../utils/jwt';
 
+/** @description middleware that protects private resources  */
 export const protect = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   // 1) Getting token and check of it's there
   let token;
