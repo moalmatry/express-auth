@@ -35,6 +35,12 @@ const sendErrorDev = (err: AppError | any, res: Response) => {
   });
 };
 
+/** @description handle jwt invalid signature */
+const handleJwtError = (err: AppError | any) => new AppError(`${err.message}`, 401);
+
+/** @description handle jwt invalid signature */
+const handleJwtExpiredError = (err: AppError | any) => new AppError(`${err.message}`, 401);
+
 /** @description send detailed errors PROJECT_ENV === production  */
 const sendErrorProduction = (err: AppError | any, res: Response) => {
   // Operational, trusted error: send message to client
@@ -79,6 +85,15 @@ const globalErrorHandler = (err: AppError | any, req: Request, res: Response, ne
       error = handleValidationErrorDB(error);
       sendErrorProduction(error, res);
     }
+    if (error.name === 'JsonWebTokenError') {
+      error = handleJwtError(error);
+      sendErrorProduction(error, res);
+    }
+    if (error.name === 'TokenExpiredError') {
+      error = handleJwtExpiredError(error);
+      sendErrorProduction(error, res);
+    }
+
     sendErrorProduction(err, res);
   } else {
     sendErrorProduction(err, res);

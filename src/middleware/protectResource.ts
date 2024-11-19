@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
+import { findUserById } from '../services/user.service';
 import AppError from '../utils/AppError';
 import catchAsync from '../utils/catchAsync';
+import { changedPasswordAfter, verifyJwt } from '../utils/jwt';
 
 export const protect = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   // 1) Getting token and check of it's there
@@ -12,10 +14,27 @@ export const protect = catchAsync(async (req: Request, res: Response, next: Next
   if (!token) {
     return next(new AppError('You are not authorized to access please log in first', 401));
   }
-  // 2) Verify token
+  // 2) Verify token if its real or not and still valid
+
+  const decoded = verifyJwt<{ id: string; iat: number; exp: number }>(token);
+
   // 3) If user still exists
 
-  // 4) If user changed password after the JWT was issued
+  const freshUser = await findUserById(decoded?.id as string);
 
+  if (!freshUser) {
+    return next(new AppError('The user belonging to this token does no longer exist', 401));
+  }
+
+  // 4) If user changed password after the JWT was issued
+  const passwordChanged = changedPasswordAfter(decoded?.iat as number, freshUser.updatedAt);
+
+  if (passwordChanged) {
+    return next(new AppError('Password has changed. Please log in again', 401));
+  }
+
+  // Access protected route
+
+  // const req.user = freshUser
   next();
 });

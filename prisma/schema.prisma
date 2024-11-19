@@ -24,7 +24,7 @@ model User {
   verified         Boolean  @default(false)
   role             Role     @default(USER) // Add this line
   createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  updatedAt        DateTime @default(now())
 }
 
 enum Role {

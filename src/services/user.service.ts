@@ -73,7 +73,7 @@ export const updatePasswordResetCode = async (id: string, passwordRestCode: stri
     },
   });
 };
-/** @description find user by id and update password */
+/** @description find user by id and update password and update updatedAt */
 export const updatePassword = async (id: string, password: string) => {
   const hashedPassword = await argon2.hash(password!);
 
@@ -83,6 +83,7 @@ export const updatePassword = async (id: string, password: string) => {
     },
     data: {
       password: hashedPassword,
+      updatedAt: new Date(),
     },
   });
 };
