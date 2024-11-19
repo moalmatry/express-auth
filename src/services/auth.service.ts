@@ -1,6 +1,6 @@
 import { DocumentType } from '@typegoose/typegoose';
-import SessionModel from '../model/session.model';
-import { User } from '../model/user.model';
+// import SessionModel from '../model/session.model';
+// import { User } from '../model/user.model';
 // import { signJwt } from '../utils/jwt';
 
 // export const createSession = async ({ userId }: { userId: string }) => {

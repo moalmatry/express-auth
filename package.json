@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest",
     "test:e2e": "jest --testPathPattern=src/e2e",
-    "build": "tsc --build",
+    "build": "tsc --build ",
     "start": "node ./dist/src/app.js",
     "start:dev": "ts-node-dev --respawn --transpile-only src/app.ts",
     "format": "prettier --write .",
