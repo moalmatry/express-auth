@@ -30,6 +30,6 @@ router.post('/forgot-password', validateResource(forgotPasswordSchema), forgotPa
 router.post('/reset-password/:id/:passwordResetCode', validateResource(resetPasswordSchema), resetPasswordHandler);
 
 // NOTE: Start admin routes
-router.get('/', protect, restrictTo('ADMIN'), getAllUsers);
+router.get('/', protect, restrictTo('ADMIN', 'EMPLOYEE'), getAllUsers);
 
 export default router;
