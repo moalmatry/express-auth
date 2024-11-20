@@ -12,7 +12,7 @@ import {
   verifyUserHandler,
   updatePasswordHandler,
 } from '../controller/auth.controller';
-import { getAllUsersHandler, updateMeHandler } from '../controller/user.controller';
+import { deleteMeHandler, getAllUsersHandler, updateMeHandler } from '../controller/user.controller';
 import { protect } from '../middleware/protectResource';
 import { restrictTo } from '../middleware/restrictTo';
 
@@ -23,7 +23,7 @@ router.post('/signup', validateResource(createUserSchema), signupHandler);
 
 router.post('/login', validateResource(createSessionSchema), loginHandler);
 
-// NOTE: Verification & Reset Password Routes & Update password & user info
+// NOTE: Verification & Reset Password Routes & Update password & user info && delete account
 router.post('/verify/:id/:verificationCode', validateResource(verifyUserSchema), verifyUserHandler);
 
 router.post('/forgot-password', validateResource(forgotPasswordSchema), forgotPasswordHandler);
@@ -33,6 +33,8 @@ router.post('/reset-password/:id/:passwordResetCode', validateResource(resetPass
 router.patch('/update-password', validateResource(updatePasswordSchema), protect, updatePasswordHandler);
 
 router.patch('/update-me', validateResource(updateMeSchema), protect, updateMeHandler);
+
+router.delete('/delete-me', protect, deleteMeHandler);
 
 // NOTE: Start admin routes
 router.get('/', protect, restrictTo('ADMIN', 'EMPLOYEE'), getAllUsersHandler);

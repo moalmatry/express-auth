@@ -29,6 +29,7 @@ model User {
   gender              Gender   @default(MALE)
   fullAddress         String?  @default(dbgenerated("null"))
   phoneNumber         String?  @default(dbgenerated("null"))
+  active              Boolean  @default(true)
 }
 
 enum Gender {

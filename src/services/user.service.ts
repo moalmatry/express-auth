@@ -1,6 +1,7 @@
 import { User } from '@prisma/client';
 import { db } from '../db';
 import argon2 from 'argon2';
+import { UpdateMeDataProps } from '../types';
 
 /** @description create user in database & hash password */
 export const createUser = async (input: Partial<User>) => {
@@ -91,6 +92,9 @@ export const updatePassword = async (id: string, password: string) => {
 /** @description return all users  */
 export const getUsers = async () => {
   const allUsers = await db.user.findMany({
+    where: {
+      active: true,
+    },
     select: {
       firstName: true,
       lastName: true,
@@ -104,15 +108,6 @@ export const getUsers = async () => {
 
   return allUsers;
 };
-
-interface UpdateMeDataProps {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  gender?: 'MALE' | 'FEMALE';
-  phoneNumber?: string;
-  fullAddress?: string;
-}
 
 /** @description find user by id and update its data does not update password*/
 export const updateMe = async (id: string, updatedData: UpdateMeDataProps) => {
@@ -133,4 +128,17 @@ export const updateMe = async (id: string, updatedData: UpdateMeDataProps) => {
     phoneNumber: user.phoneNumber,
     fullAddress: user.fullAddress,
   };
+};
+
+export const deleteMe = async (id: string) => {
+  const deletedUser = await db.user.update({
+    where: {
+      id,
+    },
+    data: {
+      active: false,
+    },
+  });
+
+  return !deletedUser.active;
 };

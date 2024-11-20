@@ -16,3 +16,13 @@ export interface CustomRequests<B = any, C = any, D = any> extends Request<objec
   requestTime?: string;
   user?: User;
 }
+
+// updateMe
+export interface UpdateMeDataProps {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  gender?: 'MALE' | 'FEMALE';
+  phoneNumber?: string;
+  fullAddress?: string;
+}

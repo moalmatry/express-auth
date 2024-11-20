@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
-import catchAsync from '../utils/catchAsync';
-import { getUsers, updateMe } from '../services/user.service';
-import { CustomRequests } from '../types';
 import { updateMeInput } from '../schema/user.schema';
+import { deleteMe, getUsers, updateMe } from '../services/user.service';
+import { CustomRequests } from '../types';
 import AppError from '../utils/AppError';
+import catchAsync from '../utils/catchAsync';
 
 /** @description returns all users from db
  *  @example   res.status(200).json({
@@ -22,6 +22,7 @@ export const getAllUsersHandler = catchAsync(async (req: Request, res: Response,
   });
 });
 
+/**@description update user data without password and returns updated user */
 export const updateMeHandler = catchAsync(
   async (req: CustomRequests<object, updateMeInput>, res: Response, next: NextFunction) => {
     const { id } = req.user;
@@ -42,8 +43,24 @@ export const updateMeHandler = catchAsync(
     res.status(200).json({
       status: 'success',
       data: {
-        ...updatedUser,
+        user: {
+          ...updatedUser,
+        },
       },
     });
   },
 );
+
+/** @description delete user by id  (make active false in db)*/
+export const deleteMeHandler = catchAsync(async (req: CustomRequests, res: Response, next: NextFunction) => {
+  const { id } = req.user;
+  const isDeleted = await deleteMe(id as string);
+  if (!isDeleted) {
+    return next(new AppError('Can not delete user right now. Please try again later', 500));
+  }
+
+  res.status(204).json({
+    status: 'success',
+    data: null,
+  });
+});
