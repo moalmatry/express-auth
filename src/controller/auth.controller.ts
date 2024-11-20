@@ -1,3 +1,4 @@
+import argon2 from 'argon2';
 import { NextFunction, Request, Response } from 'express';
 import { nanoid } from 'nanoid';
 import { CreateLoginInput } from '../schema/auth.schema';
@@ -10,12 +11,13 @@ import {
   updatePasswordResetCode,
   verifyEmail,
 } from '../services/user.service';
+import { CustomRequestUpdatePassword } from '../types';
 import AppError from '../utils/AppError';
 import catchAsync from '../utils/catchAsync';
-import { correctPassword, signJWT } from '../utils/jwt';
+import { createSendToken } from '../utils/createSendToken';
+import { correctPassword } from '../utils/jwt';
 import log from '../utils/logger';
 import sendEmail from '../utils/mailer';
-import argon2 from 'argon2';
 
 /** @description login controller that returns token if it success
  *  @example res.status(200).json({ status: 'success', token });
@@ -38,8 +40,11 @@ export const loginHandler = catchAsync(
       return next(new AppError('Invalid email or password', 401));
     }
     // send tokens
-    const token = signJWT(user?.id as string);
-    res.status(200).json({ status: 'success', token });
+    // const token = signJWT(user?.id as string);
+    // res.status(200).json({ status: 'success', token });
+
+    createSendToken(user, 201, res);
+
     return;
   },
 );
@@ -71,20 +76,7 @@ export const signupHandler = catchAsync(
       text: `Please click on the link to verify your email code is :${user?.verificationCode} user-Id: ${user?.id}`,
     });
 
-    // create token
-    const token = signJWT(user?.id as string);
-
-    res.status(201).json({
-      status: 'success',
-      token,
-      data: {
-        firstName: user?.firstName,
-        lastName: user?.lastName,
-        email: user?.email,
-        verificationCode: user?.verificationCode,
-        createdAt: user?.createdAt,
-      },
-    });
+    createSendToken(user, 201, res);
     return;
   },
 );
@@ -192,7 +184,7 @@ export const resetPasswordHandler = catchAsync(
   ) => {
     const { id, passwordResetCode } = req.params;
     const { password } = req.body;
-    // 1) Get user based on token
+    // 1) Get user based on id
     const user = await findUserById(id);
     const isOldPassword = await correctPassword(password, user?.password as string);
     const correctResetCode = await correctPassword(passwordResetCode, user?.passwordRestCode as string);
@@ -200,22 +192,41 @@ export const resetPasswordHandler = catchAsync(
       return next(new AppError('Could not reset user password', 400));
     }
 
+    // 2) check if password reset code is valid and not expired
     if (Number(user.passwordRestExpires) < Date.now()) {
       return next(new AppError('reset code has expired', 400));
     }
-
+    // 3) new password not same with old password
     if (isOldPassword) {
       return next(new AppError('New Password can not be as old password', 400));
     }
-    // user.passwordRestCode = null;
+
+    // 3) update password
     updatePasswordResetCode(id, null);
-    // user.password = password;
     updatePassword(user.id, password);
-    // await user.save();
 
     res.status(200).json({ status: 'success', message: 'Password updated successfully' });
     return;
   },
 );
 
-// TODO: try to reset password after 10 minutes
+/** @description update password for logged in users */
+export const updatePasswordHandler = catchAsync(
+  async (req: CustomRequestUpdatePassword, res: Response, next: NextFunction) => {
+    const { id, password } = req.user;
+    const { currentPassword, newPassword } = req.body;
+    // 2) Check if posted current password is correct
+    const isCurrentCorrectPassword = await correctPassword(currentPassword, password as string);
+    if (!isCurrentCorrectPassword) {
+      return next(new AppError('Invalid current password', 401));
+    }
+
+    // 3) if so, update password
+
+    updatePasswordResetCode(id, null);
+    updatePassword(id, newPassword as string);
+    // Log user in , send JWt
+
+    createSendToken(req.user, 200, res);
+  },
+);

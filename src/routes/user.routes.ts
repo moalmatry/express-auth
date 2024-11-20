@@ -1,6 +1,6 @@
 import express from 'express';
 import validateResource from '../middleware/validateResource';
-import { createUserSchema, verifyUserSchema } from '../schema/user.schema';
+import { createUserSchema, updatePasswordSchema, verifyUserSchema } from '../schema/user.schema';
 
 import { forgotPasswordSchema, resetPasswordSchema } from './../schema/user.schema';
 import { createSessionSchema } from '../schema/auth.schema';
@@ -10,6 +10,7 @@ import {
   forgotPasswordHandler,
   resetPasswordHandler,
   verifyUserHandler,
+  updatePasswordHandler,
 } from '../controller/auth.controller';
 import { getAllUsersHandler } from '../controller/user.controller';
 import { protect } from '../middleware/protectResource';
@@ -22,12 +23,14 @@ router.post('/signup', validateResource(createUserSchema), signupHandler);
 
 router.post('/login', validateResource(createSessionSchema), loginHandler);
 
-// NOTE: Verification & Reset Password Routes
+// NOTE: Verification & Reset Password Routes & Update password & user info
 router.post('/verify/:id/:verificationCode', validateResource(verifyUserSchema), verifyUserHandler);
 
 router.post('/forgot-password', validateResource(forgotPasswordSchema), forgotPasswordHandler);
 
 router.post('/reset-password/:id/:passwordResetCode', validateResource(resetPasswordSchema), resetPasswordHandler);
+
+router.patch('/update-password', validateResource(updatePasswordSchema), protect, updatePasswordHandler);
 
 // NOTE: Start admin routes
 router.get('/', protect, restrictTo('ADMIN', 'EMPLOYEE'), getAllUsersHandler);

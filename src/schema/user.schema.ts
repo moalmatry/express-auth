@@ -56,7 +56,27 @@ export const resetPasswordSchema = z.object({
     }),
 });
 
+export const updatePasswordSchema = z.object({
+  body: z
+    .object({
+      currentPassword: z
+        .string({ required_error: 'Please enter current password' })
+        .min(6, 'Password is too short - should be min 6 characters'),
+      newPassword: z
+        .string({ required_error: 'Please enter current password' })
+        .min(6, 'Password is too short - should be min 6 characters'),
+      confirmNewPassword: z
+        .string({ required_error: 'Please enter current password' })
+        .min(6, 'Password is too short - should be min 6 characters'),
+    })
+    .refine((data) => data.newPassword === data.confirmNewPassword, {
+      message: "Password don't match",
+      path: ['passwordConfirmation'],
+    }),
+});
+
 export type CreateUserInput = z.TypeOf<typeof createUserSchema>['body'];
 export type VerifyUserInput = z.TypeOf<typeof verifyUserSchema>['params'];
 export type ForgotPasswordInput = z.TypeOf<typeof forgotPasswordSchema>['body'];
 export type ResetPasswordInput = z.TypeOf<typeof resetPasswordSchema>;
+export type updatePasswordInput = z.TypeOf<typeof updatePasswordSchema>['body'];
