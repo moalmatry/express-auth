@@ -20,7 +20,7 @@ import argon2 from 'argon2';
 /** @description login controller that returns token if it success
  *  @example res.status(200).json({ status: 'success', token });
  */
-export const login = catchAsync(
+export const loginHandler = catchAsync(
   async (req: Request<object, object, CreateLoginInput>, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
     const user = await findUserByEmail(email);
@@ -58,7 +58,7 @@ export const login = catchAsync(
     });
  * 
 */
-export const signup = catchAsync(
+export const signupHandler = catchAsync(
   async (req: Request<object, object, CreateUserInput>, res: Response, next: NextFunction): Promise<void> => {
     const { body } = req;
     // create user
@@ -89,11 +89,9 @@ export const signup = catchAsync(
   },
 );
 /** @description  sends email to users to verify your email 
- * @example  res.status(200).json({
+ * @example res.status(200).json({
         status: 'success',
-        data: {
-          message: 'User verified successfully',
-        },
+        message: 'User verified successfully',
       });
  * 
 */
@@ -119,9 +117,7 @@ export const verifyUserHandler = catchAsync(
       await verifyEmail(id);
       res.status(200).json({
         status: 'success',
-        data: {
-          message: 'User verified successfully',
-        },
+        message: 'User verified successfully',
       });
       return;
     } else {
@@ -137,8 +133,10 @@ export const verifyUserHandler = catchAsync(
       });
  */
 export const forgotPasswordHandler = catchAsync(
+  // TODO: make token expiration time 10 minutes
   async (req: Request<object, object, ForgotPasswordInput>, res: Response, next: NextFunction) => {
     const { email } = req.body;
+    // 1) Get user
     const user = await findUserByEmail(email);
     if (!user) {
       // log.debug(`User with email ${email} does't exist.`);
@@ -152,25 +150,33 @@ export const forgotPasswordHandler = catchAsync(
     if (!user.verified) {
       return next(new AppError('User is not verified. Please verify your email first.', 400));
     }
+    // 2) generate random token
 
     const passwordResetCode = nanoid();
-    const hashedPassword = await argon2.hash(passwordResetCode);
+    const hashedPasswordResetCode = await argon2.hash(passwordResetCode);
 
-    // user.passwordRestCode = passwordResetCode;
-    // await user.save();
-    await updatePasswordResetCode(user.id, hashedPassword);
+    await updatePasswordResetCode(user.id, hashedPasswordResetCode);
 
-    await sendEmail({
-      from: 'test@example.com',
-      to: user.email,
-      subject: 'Password Reset Request',
-      text: `User id is: ${user.id} ,Password reset code: ${passwordResetCode}`,
-    });
-    log.debug(`Password reset code sent to ${email}`);
-    res.status(200).json({
-      status: 'success',
-      message: 'Email has been sent to your email. Please check your inbox.',
-    });
+    // 3) send email to user
+
+    try {
+      await sendEmail({
+        from: 'test@example.com',
+        to: user.email,
+        subject: 'Password Reset Request',
+        text: `User id is: ${user.id} ,Password reset code: ${passwordResetCode}`,
+      });
+      log.debug(`Password reset code sent to ${email}`);
+      res.status(200).json({
+        status: 'success',
+        message: 'Email has been sent to your email. Please check your inbox.',
+      });
+    } catch (err) {
+      log.error(err);
+      await updatePasswordResetCode(user.id, null);
+
+      return next(new AppError('There was an error sending email. Try again later', 500));
+    }
     return;
   },
 );
@@ -186,13 +192,21 @@ export const resetPasswordHandler = catchAsync(
   ) => {
     const { id, passwordResetCode } = req.params;
     const { password } = req.body;
+    // 1) Get user based on token
     const user = await findUserById(id);
-
+    const isOldPassword = await correctPassword(password, user?.password as string);
     const correctResetCode = await correctPassword(passwordResetCode, user?.passwordRestCode as string);
     if (!user || !user.passwordRestCode || !correctResetCode) {
       return next(new AppError('Could not reset user password', 400));
     }
 
+    if (Number(user.passwordRestExpires) < Date.now()) {
+      return next(new AppError('reset code has expired', 400));
+    }
+
+    if (isOldPassword) {
+      return next(new AppError('New Password can not be as old password', 400));
+    }
     // user.passwordRestCode = null;
     updatePasswordResetCode(id, null);
     // user.password = password;
@@ -203,3 +217,5 @@ export const resetPasswordHandler = catchAsync(
     return;
   },
 );
+
+// TODO: try to reset password after 10 minutes

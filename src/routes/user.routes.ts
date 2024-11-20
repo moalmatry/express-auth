@@ -5,8 +5,8 @@ import { createUserSchema, verifyUserSchema } from '../schema/user.schema';
 import { forgotPasswordSchema, resetPasswordSchema } from './../schema/user.schema';
 import { createSessionSchema } from '../schema/auth.schema';
 import {
-  login,
-  signup,
+  loginHandler,
+  signupHandler,
   forgotPasswordHandler,
   resetPasswordHandler,
   verifyUserHandler,
@@ -18,9 +18,9 @@ import { restrictTo } from '../middleware/restrictTo';
 const router = express.Router();
 
 // NOTE: Authentication Routes
-router.post('/signup', validateResource(createUserSchema), signup);
+router.post('/signup', validateResource(createUserSchema), signupHandler);
 
-router.post('/login', validateResource(createSessionSchema), login);
+router.post('/login', validateResource(createSessionSchema), loginHandler);
 
 // NOTE: Verification & Reset Password Routes
 router.post('/verify/:id/:verificationCode', validateResource(verifyUserSchema), verifyUserHandler);

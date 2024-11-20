@@ -62,7 +62,7 @@ export const findUserByEmail = async (email: string) => {
   return user;
 };
 
-/** @description find user by id and update password rest code  */
+/** @description find user by id and update password rest code valid for only 10 minutes  */
 export const updatePasswordResetCode = async (id: string, passwordRestCode: string | null) => {
   await db.user.update({
     where: {
@@ -70,6 +70,7 @@ export const updatePasswordResetCode = async (id: string, passwordRestCode: stri
     },
     data: {
       passwordRestCode,
+      passwordRestExpires: String(Date.now() + 10 * 60 * 1000),
     },
   });
 };

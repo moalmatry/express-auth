@@ -14,17 +14,18 @@ datasource db {
 }
 
 model User {
-  id               String   @id @default(uuid())
-  email            String   @unique
-  firstName        String
-  lastName         String
-  password         String
-  verificationCode String   @default(uuid())
-  passwordRestCode String? // Optional field
-  verified         Boolean  @default(false)
-  role             Role     @default(USER) // Add this line
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @default(now())
+  id                  String   @id @default(uuid())
+  email               String   @unique
+  firstName           String
+  lastName            String
+  password            String
+  verificationCode    String   @default(uuid())
+  passwordRestCode    String? // Optional field
+  passwordRestExpires String?  @default(dbgenerated("null"))
+  verified            Boolean  @default(false)
+  role                Role     @default(USER) // Add this line
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @default(now())
 }
 
 enum Role {
