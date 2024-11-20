@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import { updateMeInput } from '../schema/user.schema';
-import { deleteMe, getUsers, updateMe } from '../services/user.service';
+import { restoreUserInput, updateMeInput } from '../schema/user.schema';
+import { deleteMe, getUsers, restoreUser, updateMe } from '../services/user.service';
 import { CustomRequests } from '../types';
 import AppError from '../utils/AppError';
 import catchAsync from '../utils/catchAsync';
@@ -64,3 +64,20 @@ export const deleteMeHandler = catchAsync(async (req: CustomRequests, res: Respo
     data: null,
   });
 });
+
+/** @description reactivate deleted users  */
+export const restoreUserHandler = catchAsync(
+  async (req: Request<object, object, restoreUserInput>, res: Response, next: NextFunction) => {
+    const { email } = req.body;
+    const isRestored = await restoreUser(email);
+
+    if (!isRestored) {
+      return next(new AppError('Can not restore user right now. Please try again later', 500));
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'user restored successfully',
+    });
+  },
+);

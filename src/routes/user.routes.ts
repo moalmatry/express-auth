@@ -1,6 +1,12 @@
 import express from 'express';
 import validateResource from '../middleware/validateResource';
-import { createUserSchema, updateMeSchema, updatePasswordSchema, verifyUserSchema } from '../schema/user.schema';
+import {
+  createUserSchema,
+  restoreUserSchema,
+  updateMeSchema,
+  updatePasswordSchema,
+  verifyUserSchema,
+} from '../schema/user.schema';
 
 import { forgotPasswordSchema, resetPasswordSchema } from './../schema/user.schema';
 import { createSessionSchema } from '../schema/auth.schema';
@@ -12,7 +18,12 @@ import {
   verifyUserHandler,
   updatePasswordHandler,
 } from '../controller/auth.controller';
-import { deleteMeHandler, getAllUsersHandler, updateMeHandler } from '../controller/user.controller';
+import {
+  deleteMeHandler,
+  getAllUsersHandler,
+  restoreUserHandler,
+  updateMeHandler,
+} from '../controller/user.controller';
 import { protect } from '../middleware/protectResource';
 import { restrictTo } from '../middleware/restrictTo';
 
@@ -38,5 +49,12 @@ router.delete('/delete-me', protect, deleteMeHandler);
 
 // NOTE: Start admin routes
 router.get('/', protect, restrictTo('ADMIN', 'EMPLOYEE'), getAllUsersHandler);
+router.patch(
+  '/restore-user',
+  validateResource(restoreUserSchema),
+  protect,
+  restrictTo('ADMIN', 'EMPLOYEE'),
+  restoreUserHandler,
+);
 
 export default router;

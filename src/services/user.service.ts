@@ -142,3 +142,16 @@ export const deleteMe = async (id: string) => {
 
   return !deletedUser.active;
 };
+
+export const restoreUser = async (email: string) => {
+  const user = await db.user.update({
+    where: {
+      email,
+    },
+    data: {
+      active: true,
+    },
+  });
+
+  return user.active;
+};
