@@ -26,6 +26,14 @@ model User {
   role                Role     @default(USER) // Add this line
   createdAt           DateTime @default(now())
   updatedAt           DateTime @default(now())
+  gender              Gender   @default(MALE)
+  fullAddress         String?  @default(dbgenerated("null"))
+  phoneNumber         String?  @default(dbgenerated("null"))
+}
+
+enum Gender {
+  MALE
+  FEMALE
 }
 
 enum Role {

@@ -104,3 +104,33 @@ export const getUsers = async () => {
 
   return allUsers;
 };
+
+interface UpdateMeDataProps {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  gender?: 'MALE' | 'FEMALE';
+  phoneNumber?: string;
+  fullAddress?: string;
+}
+
+/** @description find user by id and update its data does not update password*/
+export const updateMe = async (id: string, updatedData: UpdateMeDataProps) => {
+  const user = await db.user.update({
+    where: {
+      id,
+    },
+    data: {
+      ...updatedData,
+    },
+  });
+
+  return {
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    gender: user.gender,
+    phoneNumber: user.phoneNumber,
+    fullAddress: user.fullAddress,
+  };
+};

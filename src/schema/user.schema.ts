@@ -75,8 +75,33 @@ export const updatePasswordSchema = z.object({
     }),
 });
 
+const Gender = ['MALE', 'FEMALE'] as const;
+export const updateMeSchema = z.object({
+  body: z.object({
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
+    email: z.string().email('Not valid email address').optional(),
+    fullAddress: z.string().min(20, 'Address must be at least 20 characters').optional(),
+
+    phoneNumber: z
+      .string()
+      .refine(
+        (val) => {
+          const phoneRegex = /^[+]?[0-9]{1,4}?[-.\s]?(\([0-9]{1,3}\)|[0-9]{1,4})[-.\s]?[0-9]{1,4}[-.\s]?[0-9]{1,9}$/;
+          return phoneRegex.test(val);
+        },
+        {
+          message: 'Invalid phone number format',
+        },
+      )
+      .optional(),
+    gender: z.enum(Gender).optional(),
+  }),
+});
+
 export type CreateUserInput = z.TypeOf<typeof createUserSchema>['body'];
 export type VerifyUserInput = z.TypeOf<typeof verifyUserSchema>['params'];
 export type ForgotPasswordInput = z.TypeOf<typeof forgotPasswordSchema>['body'];
 export type ResetPasswordInput = z.TypeOf<typeof resetPasswordSchema>;
 export type updatePasswordInput = z.TypeOf<typeof updatePasswordSchema>['body'];
+export type updateMeInput = z.TypeOf<typeof updateMeSchema>['body'];

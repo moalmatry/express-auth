@@ -4,14 +4,16 @@ import { signJWT } from './jwt';
 import { User } from '@prisma/client';
 
 /** @description create token and send response
- * @example   res.status(statusCode).json({
+ * @example  res.status(statusCode).json({
     status: 'success',
     token,
-    firstName: user?.firstName,
-    lastName: user?.lastName,
-    email: user?.email,
-    verificationCode: user?.verificationCode,
-    createdAt: user?.createdAt,
+    data: {
+      firstName: user?.firstName,
+      lastName: user?.lastName,
+      email: user?.email,
+      verificationCode: user?.verificationCode,
+      createdAt: user?.createdAt,
+    },
   });
  */
 export const createSendToken = (user: User | any, statusCode: number, res: Response) => {
@@ -21,11 +23,15 @@ export const createSendToken = (user: User | any, statusCode: number, res: Respo
     status: 'success',
     token,
     data: {
-      firstName: user?.firstName,
-      lastName: user?.lastName,
-      email: user?.email,
-      verificationCode: user?.verificationCode,
-      createdAt: user?.createdAt,
+      user: {
+        firstName: user?.firstName,
+        lastName: user?.lastName,
+        email: user?.email,
+        verificationCode: user?.verificationCode,
+        createdAt: user?.createdAt,
+        address: user?.fullAddress,
+        phoneNumber: user?.phoneNumber,
+      },
     },
   });
 };
