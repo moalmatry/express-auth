@@ -18,6 +18,15 @@ import { User } from '@prisma/client';
  */
 export const createSendToken = (user: User | any, statusCode: number, res: Response) => {
   const token = signJWT(user.id);
+  const cookieOptions = {
+    expires: new Date(Date.now() + Number(process.env.JWT_COOKIE_EXPIRES_IN!) * 24 * 60 * 60 * 1000),
+    secure: false,
+    httpOnly: true,
+  };
+
+  if (process.env.PROJECT_ENV === 'production') cookieOptions.secure = true;
+
+  res.cookie('jwt', token, cookieOptions);
 
   res.status(statusCode).json({
     status: 'success',

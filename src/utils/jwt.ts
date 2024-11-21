@@ -24,7 +24,7 @@ export const verifyJwt = <T>(token: string): T | null => {
 /** @description sign jwt and return token valid to process.env.JWT_EXPIRES value */
 export const signJWT = (id: string, options?: Jwt.SignOptions | undefined) => {
   const token = Jwt.sign({ id }, process.env.JWT_SECRET!, {
-    expiresIn: process.env.JWT_COOKIE_EXPIRES_IN as string,
+    expiresIn: process.env.JWT_EXPIRES as string,
     ...(options && options),
   });
 

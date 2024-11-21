@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextFunction, Request, Response } from 'express';
 import { restoreUserInput, updateMeInput } from '../schema/user.schema';
 import { deleteMe, getUsers, restoreUser, updateMe } from '../services/user.service';

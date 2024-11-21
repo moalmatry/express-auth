@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import argon2 from 'argon2';
 import { NextFunction, Request, Response } from 'express';
 import { nanoid } from 'nanoid';
@@ -64,7 +65,7 @@ export const loginHandler = catchAsync(
  * 
 */
 export const signupHandler = catchAsync(
-  async (req: Request<object, object, CreateUserInput>, res: Response, next: NextFunction): Promise<void> => {
+  async (req: Request<object, object, CreateUserInput>, res: Response, _: NextFunction): Promise<void> => {
     const { body } = req;
     // create user
     const user = await createUser(body);
