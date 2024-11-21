@@ -3,6 +3,7 @@
 require('dotenv').config();
 import config from 'config';
 import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
 import express, { NextFunction, Request, Response } from 'express';
 import router from './routes';
 import AppError from './utils/AppError';
@@ -15,16 +16,22 @@ const app = express();
 
 // NOTE: Global Middleware
 
-// Rate Limiter
+// Security HTTP Headers
+app.use(helmet());
+// Rate Limiter for requests from the same ip
 const limiter = rateLimit({
   max: 100,
   windowMs: 60 * 60 * 1000,
   message: 'Too many requests from this IP, please try again in an hour! ',
 });
 app.use('/api', limiter);
-// bodyParser alternative
-app.use(express.json());
 
+// Body parser , reading data from body int req.body
+app.use(express.json({ limit: '10kb' }));
+// Serving static files
+app.use(express.static(`${__dirname}/public`));
+
+// Test Middleware
 app.use((req: CustomRequest, res, next) => {
   req.requestTime = new Date().toISOString();
   // console.log(req.headers);
