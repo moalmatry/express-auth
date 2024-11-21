@@ -2,6 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 require('dotenv').config();
 import config from 'config';
+import rateLimit from 'express-rate-limit';
 import express, { NextFunction, Request, Response } from 'express';
 import router from './routes';
 import AppError from './utils/AppError';
@@ -12,6 +13,15 @@ import { CustomRequest } from './types';
 
 const app = express();
 
+// NOTE: Global Middleware
+
+// Rate Limiter
+const limiter = rateLimit({
+  max: 100,
+  windowMs: 60 * 60 * 1000,
+  message: 'Too many requests from this IP, please try again in an hour! ',
+});
+app.use('/api', limiter);
 // bodyParser alternative
 app.use(express.json());
 
