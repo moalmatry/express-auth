@@ -18,7 +18,7 @@ import catchAsync from '../utils/catchAsync';
 import { createSendToken } from '../utils/createSendToken';
 import { correctPassword } from '../utils/jwt';
 import log from '../utils/logger';
-import sendEmail from '../utils/mailer';
+import Email from '../utils/mailer';
 
 /** @description login controller that returns token if it success
  *  @example res.status(200).json({ status: 'success', token });
@@ -70,13 +70,14 @@ export const signupHandler = catchAsync(
     // create user
     const user = await createUser(body);
     // send verification email
-    await sendEmail({
-      from: 'test@example.com',
-      to: user?.email,
-      subject: 'Please verify your email',
-      text: `Please click on the link to verify your email code is :${user?.verificationCode} user-Id: ${user?.id}`,
-    });
-
+    // await sendEmail({
+    //   from: 'test@example.com',
+    //   to: user?.email,
+    //   subject: 'Please verify your email',
+    //   text: `Please click on the link to verify your email code is :${user?.verificationCode} user-Id: ${user?.id}`,
+    // });
+    // const url = `${req.protocol}://${req.get('host')}`;
+    await new Email(user?.email as string, user?.firstName as string, user?.verificationCode as string).sendWelcome();
     createSendToken(user, 201, res);
     return;
   },
@@ -153,12 +154,12 @@ export const forgotPasswordHandler = catchAsync(
     // 3) send email to user
 
     try {
-      await sendEmail({
-        from: 'test@example.com',
-        to: user.email,
-        subject: 'Password Reset Request',
-        text: `User id is: ${user.id} ,Password reset code: ${passwordResetCode}`,
-      });
+      // await sendEmail({
+      //   from: 'test@example.com',
+      //   to: user.email,
+      //   subject: 'Password Reset Request',
+      //   text: `User id is: ${user.id} ,Password reset code: ${passwordResetCode}`,
+      // });
       log.debug(`Password reset code sent to ${email}`);
       res.status(200).json({
         status: 'success',
