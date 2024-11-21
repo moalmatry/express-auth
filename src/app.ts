@@ -7,7 +7,6 @@ import helmet from 'helmet';
 import express, { NextFunction, Request, Response } from 'express';
 import router from './routes';
 import AppError from './utils/AppError';
-// import connectToDb from './utils/connectToDb';
 import log from './utils/logger';
 import globalErrorHandler from './controller/error.controller';
 import { CustomRequest } from './types';
@@ -28,6 +27,12 @@ app.use('/api', limiter);
 
 // Body parser , reading data from body int req.body
 app.use(express.json({ limit: '10kb' }));
+
+// TODO: Data sanitization against SQL XSS
+// app.use(xss());
+
+// Prevent parameter pollution
+
 // Serving static files
 app.use(express.static(`${__dirname}/public`));
 
