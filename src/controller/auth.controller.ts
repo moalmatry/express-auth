@@ -69,14 +69,7 @@ export const signupHandler = catchAsync(
     const { body } = req;
     // create user
     const user = await createUser(body);
-    // send verification email
-    // await sendEmail({
-    //   from: 'test@example.com',
-    //   to: user?.email,
-    //   subject: 'Please verify your email',
-    //   text: `Please click on the link to verify your email code is :${user?.verificationCode} user-Id: ${user?.id}`,
-    // });
-    // const url = `${req.protocol}://${req.get('host')}`;
+
     await new Email(user?.email as string, user?.firstName as string, user?.verificationCode as string).sendWelcome();
     createSendToken(user, 201, res);
     return;
@@ -133,7 +126,6 @@ export const forgotPasswordHandler = catchAsync(
     // 1) Get user
     const user = await findUserByEmail(email);
     if (!user) {
-      // log.debug(`User with email ${email} does't exist.`);
       res.status(200).json({
         status: 'success',
         message: 'Email has been sent to your email. Please check your inbox.',
@@ -154,13 +146,8 @@ export const forgotPasswordHandler = catchAsync(
     // 3) send email to user
 
     try {
-      // await sendEmail({
-      //   from: 'test@example.com',
-      //   to: user.email,
-      //   subject: 'Password Reset Request',
-      //   text: `User id is: ${user.id} ,Password reset code: ${passwordResetCode}`,
-      // });
-      log.debug(`Password reset code sent to ${email}`);
+      await new Email(user.email as string, user.firstName as string, passwordResetCode).sendPasswordReset();
+
       res.status(200).json({
         status: 'success',
         message: 'Email has been sent to your email. Please check your inbox.',

@@ -21,6 +21,7 @@ class Email {
     this.verificationCode = verificationCode;
   }
 
+  /**@description create nodemailer transport */
   private newTransporter(): Transporter {
     const transporter = nodemailer.createTransport({
       ...smtp,
@@ -29,6 +30,7 @@ class Email {
     return transporter;
   }
 
+  /**@description send custom email */
   public async send(template: string, subject: string, text: string) {
     const html = pug.renderFile(`${__dirname}/../template/email/${template}.pug`, {
       firstName: this.firstName,
@@ -56,6 +58,11 @@ class Email {
   /** @description send welcome message and send verification code */
   public async sendWelcome() {
     return await this.send('welcome', 'Welcome', 'Welcome to our community');
+  }
+
+  public async sendPasswordReset() {
+    console.log('done');
+    return await this.send('passwordReset', 'Reset Password', 'your password reset token (valid for only 10 minutes)');
   }
 }
 
