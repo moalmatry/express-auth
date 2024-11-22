@@ -99,6 +99,32 @@ export const updateMeSchema = z.object({
   }),
 });
 
+const Role = ['USER', 'ADMIN', 'EMPLOYEE'] as const;
+export const updateUserSchema = z.object({
+  body: z.object({
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
+    email: z.string().email('Not valid email address'),
+    fullAddress: z.string().min(20, 'Address must be at least 20 characters').optional(),
+    phoneNumber: z
+      .string()
+      .refine(
+        (val) => {
+          const phoneRegex = /^[+]?[0-9]{1,4}?[-.\s]?(\([0-9]{1,3}\)|[0-9]{1,4})[-.\s]?[0-9]{1,4}[-.\s]?[0-9]{1,9}$/;
+          return phoneRegex.test(val);
+        },
+        {
+          message: 'Invalid phone number format',
+        },
+      )
+      .optional(),
+    gender: z.enum(Gender).optional(),
+    verified: z.boolean().optional(),
+    role: z.enum(Role).optional(),
+    active: z.boolean().optional(),
+  }),
+});
+
 export const restoreUserSchema = z.object({
   body: z.object({
     email: z.string({ required_error: 'Email is required' }).email(),
@@ -112,3 +138,4 @@ export type ResetPasswordInput = z.TypeOf<typeof resetPasswordSchema>;
 export type updatePasswordInput = z.TypeOf<typeof updatePasswordSchema>['body'];
 export type updateMeInput = z.TypeOf<typeof updateMeSchema>['body'];
 export type restoreUserInput = z.TypeOf<typeof restoreUserSchema>['body'];
+export type updateUserInput = z.TypeOf<typeof updateUserSchema>['body'];

@@ -198,7 +198,6 @@ export const resetPasswordHandler = catchAsync(
     return;
   },
 );
-
 /** @description update password for logged in users */
 export const updatePasswordHandler = catchAsync(
   async (req: CustomRequestUpdatePassword, res: Response, next: NextFunction) => {

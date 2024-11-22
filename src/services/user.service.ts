@@ -1,7 +1,7 @@
 import { User } from '@prisma/client';
 import { db } from '../db';
 import argon2 from 'argon2';
-import { UpdateMeDataProps } from '../types';
+import { UpdateMeDataProps, UpdateUserProps } from '../types';
 
 /** @description create user in database & hash password */
 export const createUser = async (input: Partial<User>) => {
@@ -130,6 +130,7 @@ export const updateMe = async (id: string, updatedData: UpdateMeDataProps) => {
   };
 };
 
+/** @description disable user in database */
 export const deleteMe = async (id: string) => {
   const deletedUser = await db.user.update({
     where: {
@@ -142,7 +143,7 @@ export const deleteMe = async (id: string) => {
 
   return !deletedUser.active;
 };
-
+/** @description restore deleted user */
 export const restoreUser = async (email: string) => {
   const user = await db.user.update({
     where: {
@@ -154,4 +155,37 @@ export const restoreUser = async (email: string) => {
   });
 
   return user.active;
+};
+
+/** @description update user data but this one has more rules (does not update password) */
+export const updateUser = async (email: string, updatedData: UpdateUserProps) => {
+  const updatedUser = await db.user.update({
+    where: {
+      email,
+    },
+    data: {
+      firstName: updatedData.firstName,
+      lastName: updatedData.lastName,
+      gender: updatedData.gender,
+      role: updatedData.role,
+      verified: updatedData.verified,
+      phoneNumber: updatedData.phoneNumber,
+      fullAddress: updatedData.fullAddress,
+      active: updatedData.active,
+    },
+  });
+
+  return {
+    email: updatedUser.email,
+    firstName: updatedUser.firstName,
+    lastName: updatedUser.lastName,
+    gender: updatedUser.gender,
+    role: updatedUser.role,
+    verified: updatedUser.verified,
+    phoneNumber: updatedUser.phoneNumber,
+    fullAddress: updatedUser.fullAddress,
+    createdAt: updatedUser.createdAt,
+    updatedAt: updatedUser.updatedAt,
+    active: updatedUser.active,
+  };
 };

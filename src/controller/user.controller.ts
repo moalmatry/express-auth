@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextFunction, Request, Response } from 'express';
-import { restoreUserInput, updateMeInput } from '../schema/user.schema';
-import { deleteMe, getUsers, restoreUser, updateMe } from '../services/user.service';
+import { restoreUserInput, updateMeInput, updateUserInput } from '../schema/user.schema';
+import { deleteMe, getUsers, restoreUser, updateMe, updateUser } from '../services/user.service';
 import { CustomRequests } from '../types';
 import AppError from '../utils/AppError';
 import catchAsync from '../utils/catchAsync';
+import { User } from '@prisma/client';
 
 /** @description returns all users from db
  *  @example   res.status(200).json({
@@ -79,6 +80,59 @@ export const restoreUserHandler = catchAsync(
     res.status(200).json({
       status: 'success',
       message: 'user restored successfully',
+    });
+  },
+);
+
+/** @description returns user info  */
+export const getMeHandler = catchAsync(async (req: CustomRequests, res: Response, next: NextFunction) => {
+  const user: User = req.user;
+  res.status(200).json({
+    status: 'success',
+    data: {
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phoneNumber: user.phoneNumber,
+        fullAddress: user.fullAddress,
+        gender: user.gender,
+        createdAt: user.createdAt,
+        verified: user.verified,
+      },
+    },
+  });
+});
+
+/** @description makes admin update user data */
+export const updateUserHandler = catchAsync(
+  async (req: Request<object, object, updateUserInput>, res: Response, next: NextFunction) => {
+    const { email, firstName, fullAddress, gender, lastName, phoneNumber, role, verified, active } = req.body;
+
+    if (!phoneNumber && !fullAddress && !email && !firstName && !lastName && !gender && role && verified) {
+      return next(new AppError('There is no data to update', 400));
+    }
+
+    const updatedUser = await updateUser(email, {
+      email,
+      firstName,
+      fullAddress,
+      gender,
+      lastName,
+      phoneNumber,
+      role,
+      verified,
+      active,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        user: {
+          ...updatedUser,
+        },
+      },
     });
   },
 );

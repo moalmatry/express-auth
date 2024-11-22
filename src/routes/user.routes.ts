@@ -5,6 +5,7 @@ import {
   restoreUserSchema,
   updateMeSchema,
   updatePasswordSchema,
+  updateUserSchema,
   verifyUserSchema,
 } from '../schema/user.schema';
 
@@ -21,8 +22,10 @@ import {
 import {
   deleteMeHandler,
   getAllUsersHandler,
+  getMeHandler,
   restoreUserHandler,
   updateMeHandler,
+  updateUserHandler,
 } from '../controller/user.controller';
 import { protect } from '../middleware/protectResource';
 import { restrictTo } from '../middleware/restrictTo';
@@ -34,7 +37,7 @@ router.post('/signup', validateResource(createUserSchema), signupHandler);
 
 router.post('/login', validateResource(createSessionSchema), loginHandler);
 
-// NOTE: Verification & Reset Password Routes & Update password & user info && delete account
+// NOTE: Verification & Reset Password Routes &
 router.post('/verify/:id/:verificationCode', validateResource(verifyUserSchema), verifyUserHandler);
 
 router.post('/forgot-password', validateResource(forgotPasswordSchema), forgotPasswordHandler);
@@ -43,9 +46,13 @@ router.post('/reset-password/:id/:passwordResetCode', validateResource(resetPass
 
 router.patch('/update-password', validateResource(updatePasswordSchema), protect, updatePasswordHandler);
 
+// NOTE: Update & delete user information
+
 router.patch('/update-me', validateResource(updateMeSchema), protect, updateMeHandler);
 
 router.delete('/delete-me', protect, deleteMeHandler);
+
+router.get('/me', protect, getMeHandler);
 
 // NOTE: Start admin routes
 router.get('/', protect, restrictTo('ADMIN', 'EMPLOYEE'), getAllUsersHandler);
@@ -55,6 +62,13 @@ router.patch(
   protect,
   restrictTo('ADMIN', 'EMPLOYEE'),
   restoreUserHandler,
+);
+router.patch(
+  '/update-user',
+  validateResource(updateUserSchema),
+  protect,
+  restrictTo('ADMIN', 'EMPLOYEE'),
+  updateUserHandler,
 );
 
 export default router;

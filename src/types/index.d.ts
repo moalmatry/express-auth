@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request } from 'express';
 import { updatePasswordInput } from '../schema/user.schema';
+import { Gender, Role } from '@prisma/client';
 
 export interface CustomRequest extends Request {
   requestTime?: string;
@@ -22,7 +23,13 @@ export interface UpdateMeDataProps {
   firstName?: string;
   lastName?: string;
   email?: string;
-  gender?: 'MALE' | 'FEMALE';
+  gender?: Gender;
   phoneNumber?: string;
   fullAddress?: string;
+}
+
+export interface UpdateUserProps extends UpdateMeDataProps {
+  verified?: boolean;
+  role?: Role;
+  active?: boolean;
 }
