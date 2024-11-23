@@ -25,6 +25,6 @@ export const deleteCategorySchema = z.object({
   }),
 });
 
-export type createCategoryInput = z.TypeOf<typeof createCategorySchema>['body'];
-export type updateCategoryInput = z.TypeOf<typeof updateCategorySchema>['body'];
-export type deleteCategoryInput = z.TypeOf<typeof deleteCategorySchema>['body'];
+export type CreateCategoryInput = z.TypeOf<typeof createCategorySchema>['body'];
+export type UpdateCategoryInput = z.TypeOf<typeof updateCategorySchema>['body'];
+export type DeleteCategoryInput = z.TypeOf<typeof deleteCategorySchema>['body'];

@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextFunction, Request, Response } from 'express';
-import { restoreUserInput, updateMeInput, updateUserInput } from '../schema/user.schema';
 import { deleteMe, getUsers, restoreUser, updateMe, updateUser } from '../services/user.service';
 import { CustomRequests } from '../types';
 import AppError from '../utils/AppError';
 import catchAsync from '../utils/catchAsync';
 import { User } from '@prisma/client';
+import { RestoreUserInput, UpdateMeInput, UpdateUserInput } from '../schema/user.schema';
 
 /** @description returns all users from db
  *  @example   res.status(200).json({
@@ -26,7 +26,7 @@ export const getAllUsersHandler = catchAsync(async (req: Request, res: Response,
 
 /**@description update user data without password and returns updated user */
 export const updateMeHandler = catchAsync(
-  async (req: CustomRequests<object, updateMeInput>, res: Response, next: NextFunction) => {
+  async (req: CustomRequests<object, UpdateMeInput>, res: Response, next: NextFunction) => {
     const { id } = req.user;
     const { phoneNumber, fullAddress, email, firstName, lastName, gender } = req.body;
 
@@ -69,7 +69,7 @@ export const deleteMeHandler = catchAsync(async (req: CustomRequests, res: Respo
 
 /** @description reactivate deleted users  */
 export const restoreUserHandler = catchAsync(
-  async (req: Request<object, object, restoreUserInput>, res: Response, next: NextFunction) => {
+  async (req: Request<object, object, RestoreUserInput>, res: Response, next: NextFunction) => {
     const { email } = req.body;
     const isRestored = await restoreUser(email);
 
@@ -107,7 +107,7 @@ export const getMeHandler = catchAsync(async (req: CustomRequests, res: Response
 
 /** @description makes admin update user data */
 export const updateUserHandler = catchAsync(
-  async (req: Request<object, object, updateUserInput>, res: Response, next: NextFunction) => {
+  async (req: Request<object, object, UpdateUserInput>, res: Response, next: NextFunction) => {
     const { email, firstName, fullAddress, gender, lastName, phoneNumber, role, verified, active } = req.body;
 
     if (!phoneNumber && !fullAddress && !email && !firstName && !lastName && !gender && role && verified) {

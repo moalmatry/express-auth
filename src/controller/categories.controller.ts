@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextFunction, Request, Response } from 'express';
-import { createCategoryInput, deleteCategoryInput, updateCategoryInput } from '../schema/categories.schema';
 import { createCategory, deleteCategory, getCategories, updateCategory } from '../services/categories.service';
 import catchAsync from '../utils/catchAsync';
 import AppError from '../utils/AppError';
+import { CreateCategoryInput, DeleteCategoryInput, UpdateCategoryInput } from '../schema/categories.schema';
 
 /**@description get all categories */
 export const getAllCategoriesHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -21,7 +21,7 @@ export const getAllCategoriesHandler = catchAsync(async (req: Request, res: Resp
 
 /**@description create new category */
 export const createCategoryHandler = catchAsync(
-  async (req: Request<object, object, createCategoryInput>, res, next) => {
+  async (req: Request<object, object, CreateCategoryInput>, res, next) => {
     const { name } = req.body;
     const category = await createCategory(name);
 
@@ -34,7 +34,7 @@ export const createCategoryHandler = catchAsync(
 
 /**@description update existing category */
 export const updateCategoryHandler = catchAsync(
-  async (req: Request<object, object, updateCategoryInput>, res: Response, next: NextFunction) => {
+  async (req: Request<object, object, UpdateCategoryInput>, res: Response, next: NextFunction) => {
     const { name, newName } = req.body;
 
     const updatedCategory = await updateCategory(name, newName);
@@ -52,7 +52,7 @@ export const updateCategoryHandler = catchAsync(
 
 /**@description delete existing category */
 export const deleteCategoryHandler = catchAsync(
-  async (req: Request<object, object, deleteCategoryInput>, res: Response, next: NextFunction) => {
+  async (req: Request<object, object, DeleteCategoryInput>, res: Response, next: NextFunction) => {
     const { name } = req.body;
 
     const deletedCategory = await deleteCategory(name);

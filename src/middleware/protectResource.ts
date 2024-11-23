@@ -1,9 +1,9 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Response } from 'express';
 import { findUserById } from '../services/user.service';
+import { CustomRequest } from '../types';
 import AppError from '../utils/AppError';
 import catchAsync from '../utils/catchAsync';
 import { changedPasswordAfter, verifyJwt } from '../utils/jwt';
-import { CustomRequest } from '../types';
 
 /** @description middleware that protects private resources  */
 export const protect = catchAsync(async (req: CustomRequest, _res: Response, next: NextFunction) => {
