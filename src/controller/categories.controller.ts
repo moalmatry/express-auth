@@ -1,11 +1,16 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextFunction, Request, Response } from 'express';
 import { createCategoryInput, deleteCategoryInput, updateCategoryInput } from '../schema/categories.schema';
 import { createCategory, deleteCategory, getCategories, updateCategory } from '../services/categories.service';
 import catchAsync from '../utils/catchAsync';
+import AppError from '../utils/AppError';
 
 /**@description get all categories */
 export const getAllCategoriesHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const categories = await getCategories();
+  const categories = await getCategories(false);
+  if (!categories) {
+    return next(new AppError('Something went wong please try again later', 500));
+  }
 
   res.status(200).json({
     status: 'success',
@@ -34,6 +39,10 @@ export const updateCategoryHandler = catchAsync(
 
     const updatedCategory = await updateCategory(name, newName);
 
+    if (!updatedCategory) {
+      return next(new AppError('Category not fount please make sure that is exists', 400));
+    }
+
     res.status(200).json({
       status: 'success',
       data: { updatedCategory },
@@ -47,6 +56,10 @@ export const deleteCategoryHandler = catchAsync(
     const { name } = req.body;
 
     const deletedCategory = await deleteCategory(name);
+
+    if (!deletedCategory) {
+      return next(new AppError('Category not fount please make sure that is exists', 400));
+    }
 
     res.status(201).json({
       status: 'success',

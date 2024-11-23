@@ -1,8 +1,12 @@
 import { db } from '../db';
 
 /** @description return all categories  */
-export const getCategories = async () => {
-  const allCategories = await db.category.findMany({});
+export const getCategories = async (products: boolean) => {
+  const allCategories = await db.category.findMany({
+    include: {
+      products,
+    },
+  });
 
   return allCategories;
 };

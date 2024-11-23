@@ -19,17 +19,27 @@ model User {
   firstName           String
   lastName            String
   password            String
-  verificationCode    String   @default(uuid())
-  passwordRestCode    String? // Optional field
-  passwordRestExpires String?  @default(dbgenerated("null"))
   verified            Boolean  @default(false)
-  role                Role     @default(USER) // Add this line
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @default(now())
   gender              Gender   @default(MALE)
   phoneNumber         String?  @unique @default(dbgenerated("null"))
   fullAddress         String?  @default(dbgenerated("null"))
   active              Boolean  @default(true)
+  role                Role     @default(USER) // Add this line
+  verificationCode    String   @default(uuid())
+  passwordRestExpires String?  @default(dbgenerated("null"))
+  passwordRestCode    String? // Optional field
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @default(now())
+  order               Order[]
+}
+
+model Order {
+  id          String  @id @default(uuid())
+  userId      String
+  user        User    @relation(fields: [userId], references: [id])
+  totalAmount Float
+  products    Product @relation(fields: [productId], references: [id])
+  productId   String
 }
 
 model Category {
@@ -49,6 +59,7 @@ model Product {
   category    Category @relation(fields: [categoryId], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now())
+  Order       Order[]
 }
 
 enum Gender {
