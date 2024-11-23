@@ -1,5 +1,6 @@
 import express, { Request, Response, Router } from 'express';
 import user from './user.routes';
+import categories from './categories.routes';
 
 import log from '../utils/logger';
 
@@ -11,5 +12,6 @@ router.get('/healthCheck', (_: Request, res: Response) => {
 });
 
 router.use('/api/users', user);
+router.use('/api/categories', categories);
 
 export default router;

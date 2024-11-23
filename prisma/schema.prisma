@@ -1,8 +1,8 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// // This is your Prisma schema file,
+// // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
   provider = "prisma-client-js"
@@ -27,9 +27,28 @@ model User {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @default(now())
   gender              Gender   @default(MALE)
+  phoneNumber         String?  @unique @default(dbgenerated("null"))
   fullAddress         String?  @default(dbgenerated("null"))
-  phoneNumber         String?  @default(dbgenerated("null"))
   active              Boolean  @default(true)
+}
+
+model Category {
+  id       String    @id @default(uuid())
+  name     String    @unique
+  products Product[]
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  price       Float
+  images      String[]
+  description String?
+  available   Boolean  @default(true)
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
 }
 
 enum Gender {
