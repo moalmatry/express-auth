@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextFunction, Request, Response } from 'express';
 import catchAsync from '../utils/catchAsync';
-import { CreateProductInput } from '../schema/products.schema';
-import { createNewProduct, getAllProducts } from '../services/products.service';
+import { CreateProductInput, DeleteProductInput, UpdateProductInput } from '../schema/products.schema';
+import { createNewProduct, deleteProduct, getAllProducts, updateProduct } from '../services/products.service';
 
 /** @description return all products */
 export const getAllProductsHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -32,6 +32,41 @@ export const createNewProductHandler = catchAsync(
     res.status(200).json({
       status: 'success',
       data: { product },
+    });
+  },
+);
+
+/** @description update product */
+export const updateProductHandler = catchAsync(
+  async (req: Request<object, object, UpdateProductInput>, res: Response, next: NextFunction) => {
+    const { categoryName, description, id, name, price, images, tags } = req.body;
+
+    const updatedProduct = await updateProduct({
+      id,
+      categoryName,
+      description,
+      name,
+      price,
+      images,
+      tags,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      data: { product: updatedProduct },
+    });
+  },
+);
+
+/** @description delete product */
+export const deleteProductHandler = catchAsync(
+  async (req: Request<object, object, DeleteProductInput>, res: Response, next: NextFunction) => {
+    const { id } = req.body;
+    const deletedProduct = await deleteProduct(id);
+
+    res.status(200).json({
+      status: 'success',
+      data: { product: deletedProduct },
     });
   },
 );

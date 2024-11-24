@@ -1,13 +1,5 @@
 import { db } from '../db';
-
-export interface productDataProps {
-  categoryName: string;
-  description?: string;
-  name: string;
-  price: number;
-  images?: string[];
-  tags?: string[];
-}
+import { ProductDataProps, UpdateDataProps } from '../types';
 
 export const getAllProducts = async () => {
   const allProducts = db.product.findMany({});
@@ -15,7 +7,7 @@ export const getAllProducts = async () => {
   return allProducts;
 };
 
-export const createNewProduct = async (productData: productDataProps) => {
+export const createNewProduct = async (productData: ProductDataProps) => {
   const newProduct = await db.product.create({
     data: {
       name: productData.name,
@@ -28,4 +20,33 @@ export const createNewProduct = async (productData: productDataProps) => {
   });
 
   return newProduct;
+};
+
+export const updateProduct = async (updateProduct: UpdateDataProps) => {
+  const { id, price, categoryName, description, images, name, tags } = updateProduct;
+  const updatedProduct = await db.product.update({
+    where: {
+      id,
+    },
+    data: {
+      price,
+      categoryName,
+      description,
+      images,
+      name,
+      tags,
+    },
+  });
+
+  return updatedProduct;
+};
+
+export const deleteProduct = async (id: string) => {
+  const deletedProduct = await db.product.delete({
+    where: {
+      id,
+    },
+  });
+
+  return deletedProduct;
 };

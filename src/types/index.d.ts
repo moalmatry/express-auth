@@ -33,3 +33,21 @@ export interface UpdateUserProps extends UpdateMeDataProps {
   role?: Role;
   active?: boolean;
 }
+
+export interface ProductDataProps {
+  categoryName: string;
+  description?: string;
+  name: string;
+  price: number;
+  images?: string[];
+  tags?: string[];
+}
+export interface UpdateDataProps {
+  id: string;
+  categoryName?: string;
+  description?: string;
+  name?: string;
+  price: number;
+  images?: string[];
+  tags?: string[];
+}
