@@ -37,6 +37,13 @@ export const deleteProductSchema = z.object({
   }),
 });
 
+export const productByNameSchema = z.object({
+  params: z.object({
+    name: z.string({ required_error: 'Please enter category name' }),
+  }),
+});
+
 export type CreateProductInput = z.TypeOf<typeof createProductSchema>['body'];
 export type UpdateProductInput = z.TypeOf<typeof updateProductSchema>['body'];
 export type DeleteProductInput = z.TypeOf<typeof deleteProductSchema>['body'];
+export type ProductByNameInput = z.TypeOf<typeof productByNameSchema>['params'];

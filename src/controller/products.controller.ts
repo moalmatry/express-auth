@@ -1,8 +1,19 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextFunction, Request, Response } from 'express';
 import catchAsync from '../utils/catchAsync';
-import { CreateProductInput, DeleteProductInput, UpdateProductInput } from '../schema/products.schema';
-import { createNewProduct, deleteProduct, getAllProducts, updateProduct } from '../services/products.service';
+import {
+  CreateProductInput,
+  DeleteProductInput,
+  ProductByNameInput,
+  UpdateProductInput,
+} from '../schema/products.schema';
+import {
+  createNewProduct,
+  deleteProduct,
+  findProductByName,
+  getAllProducts,
+  updateProduct,
+} from '../services/products.service';
 
 /** @description return all products */
 export const getAllProductsHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -14,6 +25,20 @@ export const getAllProductsHandler = catchAsync(async (req: Request, res: Respon
     data: { products },
   });
 });
+
+export const findProductByNameHandler = catchAsync(
+  async (req: Request<ProductByNameInput>, res: Response, next: NextFunction) => {
+    const { name } = req.params;
+
+    const products = await findProductByName(name);
+
+    res.status(200).json({
+      status: 'success',
+      results: products.length,
+      data: { products },
+    });
+  },
+);
 
 /** @description create new product */
 export const createNewProductHandler = catchAsync(

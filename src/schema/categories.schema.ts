@@ -25,7 +25,7 @@ export const deleteCategorySchema = z.object({
   }),
 });
 
-export const CategoryByNameSchema = z.object({
+export const categoryByNameSchema = z.object({
   params: z.object({
     name: z.string({ required_error: 'Please enter category name' }).min(5, 'category should be least 5 characters'),
   }),
@@ -34,4 +34,4 @@ export const CategoryByNameSchema = z.object({
 export type CreateCategoryInput = z.TypeOf<typeof createCategorySchema>['body'];
 export type UpdateCategoryInput = z.TypeOf<typeof updateCategorySchema>['body'];
 export type DeleteCategoryInput = z.TypeOf<typeof deleteCategorySchema>['body'];
-export type CategoryByNameInput = z.TypeOf<typeof CategoryByNameSchema>['params'];
+export type CategoryByNameInput = z.TypeOf<typeof categoryByNameSchema>['params'];

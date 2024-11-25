@@ -7,6 +7,17 @@ export const getAllProducts = async () => {
   return allProducts;
 };
 
+export const findProductByName = async (name: string) => {
+  const products = db.product.findMany({
+    where: {
+      OR: [{ name: { contains: name, mode: 'insensitive' } }],
+      // { description: { contains: name, mode: 'insensitive' } }
+    },
+  });
+
+  return products;
+};
+
 export const createNewProduct = async (productData: ProductDataProps) => {
   const newProduct = await db.product.create({
     data: {
