@@ -43,3 +43,15 @@ export const deleteCategory = async (name: string) => {
 
   return deletedCategory;
 };
+
+export const findCategoryByName = async (name: string) => {
+  const category = await db.category.findFirst({
+    where: {
+      name,
+    },
+    include: {
+      products: true,
+    },
+  });
+  return category;
+};

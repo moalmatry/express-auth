@@ -49,18 +49,27 @@ model Category {
 }
 
 model Product {
-  id           String   @id @default(uuid())
+  id           String    @id @default(uuid())
   name         String
   price        Float
   images       String[]
   description  String?
-  available    Boolean  @default(true)
+  available    Boolean   @default(true)
   tags         String[]
   categoryName String
-  category     Category @relation(fields: [categoryName], references: [name])
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @default(now())
+  category     Category  @relation(fields: [categoryName], references: [name])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @default(now())
   Order        Order[]
+  variants     Variant[]
+}
+
+model Variant {
+  id        String  @id @default(uuid())
+  size      String?
+  price     Float
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
 }
 
 enum Gender {

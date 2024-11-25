@@ -1,9 +1,20 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextFunction, Request, Response } from 'express';
-import { createCategory, deleteCategory, getCategories, updateCategory } from '../services/categories.service';
+import {
+  createCategory,
+  deleteCategory,
+  findCategoryByName,
+  getCategories,
+  updateCategory,
+} from '../services/categories.service';
 import catchAsync from '../utils/catchAsync';
 import AppError from '../utils/AppError';
-import { CreateCategoryInput, DeleteCategoryInput, UpdateCategoryInput } from '../schema/categories.schema';
+import {
+  CategoryByNameInput,
+  CreateCategoryInput,
+  DeleteCategoryInput,
+  UpdateCategoryInput,
+} from '../schema/categories.schema';
 
 /**@description get all categories */
 export const getAllCategoriesHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -16,6 +27,19 @@ export const getAllCategoriesHandler = catchAsync(async (req: Request, res: Resp
     status: 'success',
     results: categories.length,
     data: { categories },
+  });
+});
+
+export const getCategoryByNameHandler = catchAsync(async (req: Request<CategoryByNameInput>, res, next) => {
+  const { name } = req.params;
+  const category = await findCategoryByName(name);
+
+  if (!category) {
+    return next(new AppError('Category not found', 404));
+  }
+  res.status(200).json({
+    status: 'success',
+    data: { category },
   });
 });
 
@@ -45,7 +69,7 @@ export const updateCategoryHandler = catchAsync(
 
     res.status(200).json({
       status: 'success',
-      data: { updatedCategory },
+      data: { category: updatedCategory },
     });
   },
 );
@@ -63,7 +87,7 @@ export const deleteCategoryHandler = catchAsync(
 
     res.status(201).json({
       status: 'success',
-      data: { deletedCategory },
+      data: { category: deletedCategory },
     });
   },
 );
