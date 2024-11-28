@@ -22,6 +22,7 @@ model User {
   verified            Boolean  @default(false)
   gender              Gender   @default(MALE)
   phoneNumber         String?  @unique @default(dbgenerated("null"))
+  fullAddress         String?  @default(dbgenerated("null"))
   active              Boolean  @default(true)
   role                Role     @default(USER) // Add this line
   verificationCode    String   @default(uuid())
@@ -30,28 +31,6 @@ model User {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @default(now())
   order               Order[]
-  cart                Cart     @relation(fields: [cartId], references: [id])
-  cartId              String
-  address             Address  @relation(fields: [addressId], references: [id])
-  addressId           String
-}
-
-model Address {
-  id       String  @id @default(uuid())
-  address1 String
-  address2 String? @default(dbgenerated("null"))
-  city     String
-  state    String
-  zip      String? @default(dbgenerated("null"))
-  User     User[]
-}
-
-model Cart {
-  id          String    @id @default(uuid())
-  userId      String
-  products    Product[]
-  totalAmount Float
-  User        User[]
 }
 
 model Order {
@@ -83,8 +62,6 @@ model Product {
   updatedAt    DateTime  @default(now())
   Order        Order[]
   variants     Variant[]
-  Cart         Cart?     @relation(fields: [cartId], references: [id])
-  cartId       String?
 }
 
 model Variant {

@@ -16,13 +16,12 @@ export const createUser = async (input: Partial<User>) => {
   if (!dbUser) {
     const user = await db.user.create({
       data: {
-        id: input.id,
+        id: input.id!,
         email: input.email!,
         firstName: input.firstName!,
         lastName: input.lastName!,
-        password: hashedPassword,
+        password: hashedPassword!,
         verified: false,
-        passwordRestCode: null,
       },
     });
 
