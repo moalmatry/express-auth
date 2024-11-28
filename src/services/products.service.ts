@@ -61,4 +61,3 @@ export const deleteProduct = async (id: string) => {
 
   return deletedProduct;
 };
-// nice commit
