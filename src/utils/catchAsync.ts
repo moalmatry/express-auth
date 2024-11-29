@@ -2,7 +2,7 @@
 import { NextFunction, Request, Response } from 'express';
 
 type AsyncFunction<P, ResBody, ReqBody, ReqQuery> = (
-  req: Request<P, ResBody, ReqBody, ReqQuery>,
+  req: Request<P, ResBody, ReqBody, ReqQuery> | any,
   res: Response,
   next: NextFunction,
 ) => Promise<void>;

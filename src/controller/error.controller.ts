@@ -35,6 +35,17 @@ const sendErrorDev = (err: AppError | any, res: Response) => {
   });
 };
 
+/** @description handle jwt invalid signature */
+const handleJwtError = (err: AppError | any) => new AppError(`${err.message}`, 401);
+
+/** @description handle jwt invalid signature */
+const handleJwtExpiredError = (err: AppError | any) => new AppError(`${err.message}`, 401);
+
+const handlePrismaUniqueError = (err: AppError | any) =>
+  new AppError(`This field must be unique (${err.meta.target})`, 401);
+
+const handlePrismaRecordNotFound = (err: AppError | any) => new AppError(`(${err.meta.cause}) 😡`, 401);
+
 /** @description send detailed errors PROJECT_ENV === production  */
 const sendErrorProduction = (err: AppError | any, res: Response) => {
   // Operational, trusted error: send message to client
@@ -64,12 +75,11 @@ const globalErrorHandler = (err: AppError | any, req: Request, res: Response, ne
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
 
-  // log.error(err);
-
   if (process.env.PROJECT_ENV === 'development') {
     sendErrorDev(err, res);
   } else if (process.env.PROJECT_ENV === 'production') {
     let error = { ...err };
+
     if (error.name === 'CastError') error = handleCastErrorDB(error);
     if (error.code === 11000) {
       error = handleDuplicateErrorDB(error);
@@ -79,6 +89,23 @@ const globalErrorHandler = (err: AppError | any, req: Request, res: Response, ne
       error = handleValidationErrorDB(error);
       sendErrorProduction(error, res);
     }
+    if (error.name === 'JsonWebTokenError') {
+      error = handleJwtError(error);
+      sendErrorProduction(error, res);
+    }
+    if (error.name === 'TokenExpiredError') {
+      error = handleJwtExpiredError(error);
+      sendErrorProduction(error, res);
+    }
+    if (error.code === 'P2002') {
+      error = handlePrismaUniqueError(error);
+      sendErrorProduction(error, res);
+    }
+    if (error.code === 'P2025') {
+      error = handlePrismaRecordNotFound(error);
+      sendErrorProduction(error, res);
+    }
+
     sendErrorProduction(err, res);
   } else {
     sendErrorProduction(err, res);

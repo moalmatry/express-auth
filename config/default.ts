@@ -1,7 +1,6 @@
 export default {
   port: 3000,
-  dbUrl:
-    'mongodb+srv://moalmatry2000:23194336@cluster0.l5syt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
+  dbUrl: 'postgresql://neondb_owner:FvD76mxVwGeI@ep-orange-mud-a8l8q4xf.eastus2.azure.neon.tech/',
   logLevel: 'info',
   accessTokenPrivateKey: '',
   refreshTokenPrivateKey: '',
