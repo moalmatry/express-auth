@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextFunction, Request, Response } from 'express';
-import { DeleteUserInput, RestoreUserInput, UpdateMeInput, UpdateUserInput } from '../schema/user.schema';
+import {
+  DeleteUserInput,
+  GetAllUsersInput,
+  RestoreUserInput,
+  UpdateMeInput,
+  UpdateUserInput,
+} from '../schema/user.schema';
 import {
   deleteMe,
   deleteUser,
@@ -13,6 +19,8 @@ import {
 import { CustomRequests, ExtendedUser } from '../types';
 import AppError from '../utils/AppError';
 import catchAsync from '../utils/catchAsync';
+import { createPaginationPrisma } from '../utils/createPagination';
+import { db } from '../db';
 
 /** @description returns all users from db
  *  @example   res.status(200).json({
@@ -21,15 +29,20 @@ import catchAsync from '../utils/catchAsync';
     data: { users },
   });
  */
-export const getAllUsersHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const users = await getUsers();
+export const getAllUsersHandler = catchAsync(
+  async (req: Request<object, object, object, GetAllUsersInput>, res: Response, next: NextFunction) => {
+    const { index: clientIndex, limit: ClientLimit } = req.query;
+    const { limit, startIndex, total } = await createPaginationPrisma(clientIndex, ClientLimit, db.user);
+    const users = await getUsers(startIndex, limit);
 
-  res.status(200).json({
-    status: 'success',
-    results: users.length,
-    data: { users },
-  });
-});
+    res.status(200).json({
+      status: 'success',
+      results: users.length,
+      totalResults: total,
+      data: { users },
+    });
+  },
+);
 
 /**@description update user data without password and returns updated user */
 export const updateMeHandler = catchAsync(

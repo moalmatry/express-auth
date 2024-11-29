@@ -3,6 +3,7 @@ import validateResource from '../middleware/validateResource';
 import {
   createUserSchema,
   deleteUserSchema,
+  getAllUsersSchema,
   restoreUserSchema,
   updateMeSchema,
   updatePasswordSchema,
@@ -57,7 +58,7 @@ router.delete('/delete-me', protect, deleteMeHandler);
 router.get('/me', protect, getMeHandler);
 
 // NOTE: Start admin routes
-router.get('/', protect, restrictTo('ADMIN', 'EMPLOYEE'), getAllUsersHandler);
+router.get('/', validateResource(getAllUsersSchema), protect, restrictTo('ADMIN', 'EMPLOYEE'), getAllUsersHandler);
 router.patch(
   '/restore-user',
   validateResource(restoreUserSchema),
