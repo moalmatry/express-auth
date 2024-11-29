@@ -50,7 +50,7 @@ app.all('*', (req: Request, res: Response, next: NextFunction) => {
 });
 
 app.use(globalErrorHandler);
-
+//
 // Server configurations
 const port = config.get('port');
 
