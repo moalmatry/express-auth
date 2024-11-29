@@ -11,4 +11,4 @@ export const createSessionSchema = z.object({
   }),
 });
 
-export type CreateUserInput = z.infer<typeof createSessionSchema>['body'];
+export type CreateLoginInput = z.infer<typeof createSessionSchema>['body'];
