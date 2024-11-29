@@ -1,10 +1,9 @@
-import { User } from '@prisma/client';
-import { db } from '../db';
 import argon2 from 'argon2';
-import { UpdateMeDataProps, UpdateUserProps } from '../types';
+import { db } from '../db';
+import { UpdateMeDataProps, UpdateUserProps, UserInputService } from '../types';
 
 /** @description create user in database & hash password */
-export const createUser = async (input: Partial<User>) => {
+export const createUser = async (input: UserInputService) => {
   const hashedPassword = await argon2.hash(input.password!);
 
   const dbUser = await db.user.findFirst({
@@ -16,12 +15,18 @@ export const createUser = async (input: Partial<User>) => {
   if (!dbUser) {
     const user = await db.user.create({
       data: {
-        id: input.id!,
         email: input.email!,
-        firstName: input.firstName!,
-        lastName: input.lastName!,
         password: hashedPassword!,
         verified: false,
+        profile: {
+          create: {
+            firstName: input.firstName,
+            lastName: input.lastName,
+          },
+        },
+      },
+      include: {
+        profile: true,
       },
     });
 
@@ -33,6 +38,10 @@ export const findUserById = async (id: string) => {
   const user = await db.user.findFirst({
     where: {
       id,
+      active: true,
+    },
+    include: {
+      profile: true,
     },
   });
 
@@ -56,6 +65,10 @@ export const findUserByEmail = async (email: string) => {
   const user = await db.user.findFirst({
     where: {
       email,
+      active: true,
+    },
+    include: {
+      profile: true,
     },
   });
 
@@ -67,6 +80,7 @@ export const updatePasswordResetCode = async (id: string, passwordRestCode: stri
   await db.user.update({
     where: {
       id,
+      active: true,
     },
     data: {
       passwordRestCode,
@@ -81,6 +95,7 @@ export const updatePassword = async (id: string, password: string) => {
   await db.user.update({
     where: {
       id,
+      active: true,
     },
     data: {
       password: hashedPassword,
@@ -95,13 +110,19 @@ export const getUsers = async () => {
       active: true,
     },
     select: {
-      firstName: true,
-      lastName: true,
       email: true,
       verified: true,
       createdAt: true,
       password: false,
       verificationCode: false,
+      profile: {
+        select: {
+          firstName: true,
+          lastName: true,
+          phoneNumber: true,
+          gender: true,
+        },
+      },
     },
   });
 
@@ -110,22 +131,35 @@ export const getUsers = async () => {
 
 /** @description find user by id and update its data does not update password*/
 export const updateMe = async (id: string, updatedData: UpdateMeDataProps) => {
+  const { email, firstName, fullAddress, gender, lastName, phoneNumber } = updatedData;
+
   const user = await db.user.update({
     where: {
       id,
+      active: true,
+    },
+    include: {
+      profile: true,
     },
     data: {
-      ...updatedData,
+      email,
+      profile: {
+        update: {
+          firstName,
+          lastName,
+          gender,
+          phoneNumber,
+        },
+      },
     },
   });
 
   return {
-    firstName: user.firstName,
-    lastName: user.lastName,
+    firstName: user.profile?.firstName,
+    lastName: user.profile?.lastName,
     email: user.email,
-    gender: user.gender,
-    phoneNumber: user.phoneNumber,
-    fullAddress: user.fullAddress,
+    gender: user.profile?.gender,
+    phoneNumber: user.profile?.phoneNumber,
   };
 };
 
@@ -142,6 +176,20 @@ export const deleteMe = async (id: string) => {
 
   return !deletedUser.active;
 };
+/** @description disable user in database */
+export const deleteUser = async (email: string) => {
+  const user = await db.user.update({
+    where: {
+      email,
+    },
+    data: {
+      active: false,
+    },
+  });
+
+  return user;
+};
+
 /** @description restore deleted user */
 export const restoreUser = async (email: string) => {
   const user = await db.user.update({
@@ -162,27 +210,33 @@ export const updateUser = async (email: string, updatedData: UpdateUserProps) =>
     where: {
       email,
     },
+    include: {
+      profile: true,
+    },
     data: {
-      firstName: updatedData.firstName,
-      lastName: updatedData.lastName,
-      gender: updatedData.gender,
       role: updatedData.role,
       verified: updatedData.verified,
-      phoneNumber: updatedData.phoneNumber,
-      fullAddress: updatedData.fullAddress,
       active: updatedData.active,
+
+      profile: {
+        update: {
+          firstName: updatedData.firstName,
+          lastName: updatedData.lastName,
+          gender: updatedData.gender,
+          phoneNumber: updatedData.phoneNumber,
+        },
+      },
     },
   });
 
   return {
     email: updatedUser.email,
-    firstName: updatedUser.firstName,
-    lastName: updatedUser.lastName,
-    gender: updatedUser.gender,
+    firstName: updatedUser.profile?.firstName,
+    lastName: updatedUser.profile?.lastName,
+    gender: updatedUser.profile?.gender,
     role: updatedUser.role,
     verified: updatedUser.verified,
-    phoneNumber: updatedUser.phoneNumber,
-    fullAddress: updatedUser.fullAddress,
+    phoneNumber: updatedUser.profile?.phoneNumber,
     createdAt: updatedUser.createdAt,
     updatedAt: updatedUser.updatedAt,
     active: updatedUser.active,

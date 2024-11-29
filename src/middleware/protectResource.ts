@@ -37,6 +37,8 @@ export const protect = catchAsync(async (req: CustomRequest, _res: Response, nex
 
   // Access protected route
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   req.user = freshUser;
   next();
 });

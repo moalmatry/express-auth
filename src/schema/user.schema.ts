@@ -82,7 +82,6 @@ export const updateMeSchema = z.object({
     lastName: z.string().optional(),
     email: z.string().email('Not valid email address').optional(),
     fullAddress: z.string().min(20, 'Address must be at least 20 characters').optional(),
-
     phoneNumber: z
       .string()
       .refine(
@@ -131,6 +130,12 @@ export const restoreUserSchema = z.object({
   }),
 });
 
+export const deleteUserSchema = z.object({
+  body: z.object({
+    email: z.string({ required_error: 'Email is required' }).email(),
+  }),
+});
+
 export type CreateUserInput = z.TypeOf<typeof createUserSchema>['body'];
 export type VerifyUserInput = z.TypeOf<typeof verifyUserSchema>['params'];
 export type ForgotPasswordInput = z.TypeOf<typeof forgotPasswordSchema>['body'];
@@ -139,3 +144,4 @@ export type UpdatePasswordInput = z.TypeOf<typeof updatePasswordSchema>['body'];
 export type UpdateMeInput = z.TypeOf<typeof updateMeSchema>['body'];
 export type RestoreUserInput = z.TypeOf<typeof restoreUserSchema>['body'];
 export type UpdateUserInput = z.TypeOf<typeof updateUserSchema>['body'];
+export type DeleteUserInput = z.TypeOf<typeof deleteUserSchema>['body'];

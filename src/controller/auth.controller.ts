@@ -66,11 +66,15 @@ export const loginHandler = catchAsync(
 */
 export const signupHandler = catchAsync(
   async (req: Request<object, object, CreateUserInput>, res: Response, _: NextFunction): Promise<void> => {
-    const { body } = req;
+    const { email, firstName, lastName, password } = req.body;
     // create user
-    const user = await createUser(body);
+    const user = await createUser({ email, firstName, lastName, password });
 
-    await new Email(user?.email as string, user?.firstName as string, user?.verificationCode as string).sendWelcome();
+    await new Email(
+      user?.email as string,
+      user?.profile?.firstName as string,
+      user?.verificationCode as string,
+    ).sendWelcome();
     createSendToken(user, 201, res);
     return;
   },
@@ -146,7 +150,7 @@ export const forgotPasswordHandler = catchAsync(
     // 3) send email to user
 
     try {
-      await new Email(user.email as string, user.firstName as string, passwordResetCode).sendPasswordReset();
+      await new Email(user.email as string, user?.profile?.firstName as string, passwordResetCode).sendPasswordReset();
 
       res.status(200).json({
         status: 'success',
@@ -201,7 +205,7 @@ export const resetPasswordHandler = catchAsync(
 /** @description update password for logged in users */
 export const updatePasswordHandler = catchAsync(
   async (req: CustomRequestUpdatePassword, res: Response, next: NextFunction) => {
-    const { id, password } = req.user;
+    const { password, id } = req.user;
     const { currentPassword, newPassword } = req.body;
     // 2) Check if posted current password is correct
     const isCurrentCorrectPassword = await correctPassword(currentPassword, password as string);

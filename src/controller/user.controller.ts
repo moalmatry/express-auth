@@ -1,11 +1,19 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextFunction, Request, Response } from 'express';
-import { deleteMe, getUsers, restoreUser, updateMe, updateUser } from '../services/user.service';
-import { CustomRequests } from '../types';
+import {
+  deleteMe,
+  deleteUser,
+  findUserByEmail,
+  getUsers,
+  restoreUser,
+  updateMe,
+  updateUser,
+} from '../services/user.service';
+import { CustomRequests, ExtendedUser } from '../types';
 import AppError from '../utils/AppError';
 import catchAsync from '../utils/catchAsync';
-import { User } from '@prisma/client';
-import { RestoreUserInput, UpdateMeInput, UpdateUserInput } from '../schema/user.schema';
+import { Profile, User } from '@prisma/client';
+import { DeleteUserInput, RestoreUserInput, UpdateMeInput, UpdateUserInput } from '../schema/user.schema';
 
 /** @description returns all users from db
  *  @example   res.status(200).json({
@@ -67,6 +75,25 @@ export const deleteMeHandler = catchAsync(async (req: CustomRequests, res: Respo
   });
 });
 
+export const deleteUserHandler = catchAsync(
+  async (req: Request<object, object, DeleteUserInput>, res: Response, next: NextFunction) => {
+    const { email } = req.body;
+
+    const checkUser = await findUserByEmail(email);
+
+    if (!checkUser) {
+      return next(new AppError('User Not found or already deleted', 404));
+    }
+
+    await deleteUser(email);
+
+    res.status(204).json({
+      status: 'success',
+      data: null,
+    });
+  },
+);
+
 /** @description reactivate deleted users  */
 export const restoreUserHandler = catchAsync(
   async (req: Request<object, object, RestoreUserInput>, res: Response, next: NextFunction) => {
@@ -86,18 +113,17 @@ export const restoreUserHandler = catchAsync(
 
 /** @description returns user info  */
 export const getMeHandler = catchAsync(async (req: CustomRequests, res: Response, next: NextFunction) => {
-  const user: User = req.user;
+  const user: ExtendedUser = req.user;
   res.status(200).json({
     status: 'success',
     data: {
       user: {
         id: user.id,
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        phoneNumber: user.phoneNumber,
-        fullAddress: user.fullAddress,
-        gender: user.gender,
+        firstName: user.profile.firstName,
+        lastName: user.profile.lastName,
+        phoneNumber: user.profile.phoneNumber,
+        gender: user.profile.gender,
         createdAt: user.createdAt,
         verified: user.verified,
       },

@@ -33,13 +33,13 @@ export const createSendToken = (user: User | any, statusCode: number, res: Respo
     token,
     data: {
       user: {
-        firstName: user?.firstName,
-        lastName: user?.lastName,
-        email: user?.email,
+        id: user.id,
+        firstName: user?.profile.firstName,
+        lastName: user?.profile.lastName,
+        email: user.email,
         verificationCode: user?.verificationCode,
         createdAt: user?.createdAt,
-        address: user?.fullAddress,
-        phoneNumber: user?.phoneNumber,
+        phoneNumber: user.profile.phoneNumber,
       },
     },
   });

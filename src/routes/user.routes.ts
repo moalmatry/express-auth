@@ -2,6 +2,7 @@ import express from 'express';
 import validateResource from '../middleware/validateResource';
 import {
   createUserSchema,
+  deleteUserSchema,
   restoreUserSchema,
   updateMeSchema,
   updatePasswordSchema,
@@ -21,6 +22,7 @@ import {
 } from '../controller/auth.controller';
 import {
   deleteMeHandler,
+  deleteUserHandler,
   getAllUsersHandler,
   getMeHandler,
   restoreUserHandler,
@@ -70,5 +72,6 @@ router.patch(
   restrictTo('ADMIN', 'EMPLOYEE'),
   updateUserHandler,
 );
+router.delete('/delete-user', validateResource(deleteUserSchema), protect, deleteUserHandler);
 
 export default router;

@@ -16,30 +16,45 @@ datasource db {
 model User {
   id                  String   @id @default(uuid())
   email               String   @unique
-  firstName           String
-  lastName            String
   password            String
   verified            Boolean  @default(false)
-  gender              Gender   @default(MALE)
-  phoneNumber         String?  @unique @default(dbgenerated("null"))
-  fullAddress         String?  @default(dbgenerated("null"))
   active              Boolean  @default(true)
   role                Role     @default(USER) // Add this line
   verificationCode    String   @default(uuid())
   passwordRestExpires String?  @default(dbgenerated("null"))
   passwordRestCode    String? // Optional field
+  order               Order[]
+  profile             Profile?
+  address             Address?
   createdAt           DateTime @default(now())
   updatedAt           DateTime @default(now())
-  order               Order[]
+}
+
+model Profile {
+  userId      String  @unique
+  user        User    @relation(fields: [userId], references: [id])
+  firstName   String
+  lastName    String
+  phoneNumber String? @unique @default(dbgenerated("null"))
+  gender      Gender  @default(MALE)
+}
+
+model Address {
+  userId  String @unique
+  user    User   @relation(fields: [userId], references: [id])
+  street  String
+  city    String
+  state   String
+  zipCode String
 }
 
 model Order {
-  id          String  @id @default(uuid())
+  id          String    @id @default(uuid())
   userId      String
-  user        User    @relation(fields: [userId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
   totalAmount Float
-  products    Product @relation(fields: [productId], references: [id])
-  productId   String
+  status      Status    @default(PENDING)
+  products    Product[]
 }
 
 model Category {
@@ -60,8 +75,9 @@ model Product {
   category     Category  @relation(fields: [categoryName], references: [name])
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @default(now())
-  Order        Order[]
   variants     Variant[]
+  Order        Order?    @relation(fields: [orderId], references: [id])
+  orderId      String?
 }
 
 model Variant {
@@ -81,4 +97,13 @@ enum Role {
   USER
   ADMIN
   EMPLOYEE
+}
+
+enum Status {
+  PENDING
+  SHIPPED
+  DELIVERED
+  COMPLETED
+  CANCELLED
+  RETURNED
 }
