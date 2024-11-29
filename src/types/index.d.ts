@@ -20,6 +20,13 @@ export interface ExtendedUser extends User {
     phoneNumber: string;
     gender: string;
   };
+  address: {
+    id?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    street?: string;
+  };
 }
 export interface CustomRequests<B = any, C = any, D = any> extends Request<object, B, C, D> {
   requestTime?: string;
@@ -33,7 +40,18 @@ export interface UpdateMeDataProps {
   email?: string;
   gender?: Gender;
   phoneNumber?: string;
-  fullAddress?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  street?: string;
+}
+
+export interface CreateAddressInput {
+  id: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  street?: string;
 }
 
 export interface UpdateUserProps extends UpdateMeDataProps {

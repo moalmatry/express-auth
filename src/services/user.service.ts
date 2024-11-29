@@ -1,6 +1,6 @@
 import argon2 from 'argon2';
 import { db } from '../db';
-import { UpdateMeDataProps, UpdateUserProps, UserInputService } from '../types';
+import { CreateAddressInput, UpdateMeDataProps, UpdateUserProps, UserInputService } from '../types';
 
 /** @description create user in database & hash password */
 export const createUser = async (input: UserInputService) => {
@@ -33,6 +33,42 @@ export const createUser = async (input: UserInputService) => {
     return user;
   }
 };
+export const createAddress = async (input: CreateAddressInput) => {
+  const { id, city, state, street, zipCode } = input;
+  // const address = await db.user.update({
+  //   where: {
+  //     id,
+  //     active: true,
+  //   },
+  //   include: {
+  //     address: true,
+  //   },
+  //   data: {
+  //     address: {
+  //       connect: {
+  //         userId: id,
+  //         city,
+  //         state,
+  //         street,
+  //         zipCode,
+  //       },
+  //     },
+  //   },
+  // });
+
+  const address = await db.address.create({
+    data: {
+      userId: id,
+      city,
+      state,
+      street,
+      zipCode,
+    },
+  });
+
+  return address;
+};
+
 /** @description find user by id */
 export const findUserById = async (id: string) => {
   const user = await db.user.findFirst({
@@ -42,6 +78,7 @@ export const findUserById = async (id: string) => {
     },
     include: {
       profile: true,
+      address: true,
     },
   });
 
@@ -131,7 +168,7 @@ export const getUsers = async () => {
 
 /** @description find user by id and update its data does not update password*/
 export const updateMe = async (id: string, updatedData: UpdateMeDataProps) => {
-  const { email, firstName, fullAddress, gender, lastName, phoneNumber } = updatedData;
+  const { email, firstName, city, state, street, zipCode, gender, lastName, phoneNumber } = updatedData;
 
   const user = await db.user.update({
     where: {
@@ -140,6 +177,7 @@ export const updateMe = async (id: string, updatedData: UpdateMeDataProps) => {
     },
     include: {
       profile: true,
+      address: true,
     },
     data: {
       email,
@@ -151,6 +189,14 @@ export const updateMe = async (id: string, updatedData: UpdateMeDataProps) => {
           phoneNumber,
         },
       },
+      address: {
+        update: {
+          city,
+          state,
+          street,
+          zipCode,
+        },
+      },
     },
   });
 
@@ -160,6 +206,10 @@ export const updateMe = async (id: string, updatedData: UpdateMeDataProps) => {
     email: user.email,
     gender: user.profile?.gender,
     phoneNumber: user.profile?.phoneNumber,
+    city: user.address?.city,
+    state: user.address?.state,
+    street: user.address?.street,
+    zipCode: user.address?.zipCode,
   };
 };
 

@@ -40,12 +40,12 @@ model Profile {
 }
 
 model Address {
-  userId  String @unique
-  user    User   @relation(fields: [userId], references: [id])
-  street  String
-  city    String
-  state   String
-  zipCode String
+  userId  String  @unique
+  user    User    @relation(fields: [userId], references: [id])
+  street  String?
+  city    String?
+  state   String?
+  zipCode String?
 }
 
 model Order {

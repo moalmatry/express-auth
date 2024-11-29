@@ -81,7 +81,6 @@ export const updateMeSchema = z.object({
     firstName: z.string().optional(),
     lastName: z.string().optional(),
     email: z.string().email('Not valid email address').optional(),
-    fullAddress: z.string().min(20, 'Address must be at least 20 characters').optional(),
     phoneNumber: z
       .string()
       .refine(
@@ -95,6 +94,10 @@ export const updateMeSchema = z.object({
       )
       .optional(),
     gender: z.enum(Gender).optional(),
+    street: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
+    zipCode: z.string().optional(),
   }),
 });
 
