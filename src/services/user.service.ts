@@ -1,6 +1,6 @@
 import argon2 from 'argon2';
 import { db } from '../db';
-import { CreateAddressInput, UpdateMeDataProps, UpdateUserProps, UserInputService } from '../types';
+import { UpdateMeDataProps, UpdateUserProps, UserInputService } from '../types';
 
 /** @description create user in database & hash password */
 export const createUser = async (input: UserInputService) => {
@@ -24,6 +24,14 @@ export const createUser = async (input: UserInputService) => {
             lastName: input.lastName,
           },
         },
+        address: {
+          create: {
+            city: '',
+            state: '',
+            street: '',
+            zipCode: '',
+          },
+        },
       },
       include: {
         profile: true,
@@ -32,41 +40,6 @@ export const createUser = async (input: UserInputService) => {
 
     return user;
   }
-};
-export const createAddress = async (input: CreateAddressInput) => {
-  const { id, city, state, street, zipCode } = input;
-  // const address = await db.user.update({
-  //   where: {
-  //     id,
-  //     active: true,
-  //   },
-  //   include: {
-  //     address: true,
-  //   },
-  //   data: {
-  //     address: {
-  //       connect: {
-  //         userId: id,
-  //         city,
-  //         state,
-  //         street,
-  //         zipCode,
-  //       },
-  //     },
-  //   },
-  // });
-
-  const address = await db.address.create({
-    data: {
-      userId: id,
-      city,
-      state,
-      street,
-      zipCode,
-    },
-  });
-
-  return address;
 };
 
 /** @description find user by id */
@@ -213,6 +186,61 @@ export const updateMe = async (id: string, updatedData: UpdateMeDataProps) => {
   };
 };
 
+/** @description update user data but this one has more rules (does not update password) */
+export const updateUser = async (email: string, updatedData: UpdateUserProps) => {
+  const { active, city, firstName, gender, lastName, phoneNumber, role, state, street, verified, zipCode } =
+    updatedData;
+  const updatedUser = await db.user.update({
+    where: {
+      email,
+    },
+    include: {
+      profile: true,
+      address: true,
+    },
+    data: {
+      email,
+      active,
+      role,
+      verified,
+      profile: {
+        update: {
+          firstName,
+          lastName,
+          gender,
+          phoneNumber,
+        },
+      },
+
+      address: {
+        update: {
+          city,
+          state,
+          street,
+          zipCode,
+        },
+      },
+    },
+  });
+
+  return {
+    email: updatedUser.email,
+    firstName: updatedUser.profile?.firstName,
+    lastName: updatedUser.profile?.lastName,
+    gender: updatedUser.profile?.gender,
+    role: updatedUser.role,
+    verified: updatedUser.verified,
+    phoneNumber: updatedUser.profile?.phoneNumber,
+    createdAt: updatedUser.createdAt,
+    updatedAt: updatedUser.updatedAt,
+    active: updatedUser.active,
+    street: updatedUser.address?.street,
+    city: updatedUser.address?.city,
+    state: updatedUser.address?.state,
+    zipCode: updatedUser.address?.zipCode,
+  };
+};
+
 /** @description disable user in database */
 export const deleteMe = async (id: string) => {
   const deletedUser = await db.user.update({
@@ -252,43 +280,4 @@ export const restoreUser = async (email: string) => {
   });
 
   return user.active;
-};
-
-/** @description update user data but this one has more rules (does not update password) */
-export const updateUser = async (email: string, updatedData: UpdateUserProps) => {
-  const updatedUser = await db.user.update({
-    where: {
-      email,
-    },
-    include: {
-      profile: true,
-    },
-    data: {
-      role: updatedData.role,
-      verified: updatedData.verified,
-      active: updatedData.active,
-
-      profile: {
-        update: {
-          firstName: updatedData.firstName,
-          lastName: updatedData.lastName,
-          gender: updatedData.gender,
-          phoneNumber: updatedData.phoneNumber,
-        },
-      },
-    },
-  });
-
-  return {
-    email: updatedUser.email,
-    firstName: updatedUser.profile?.firstName,
-    lastName: updatedUser.profile?.lastName,
-    gender: updatedUser.profile?.gender,
-    role: updatedUser.role,
-    verified: updatedUser.verified,
-    phoneNumber: updatedUser.profile?.phoneNumber,
-    createdAt: updatedUser.createdAt,
-    updatedAt: updatedUser.updatedAt,
-    active: updatedUser.active,
-  };
 };

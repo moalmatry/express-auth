@@ -124,6 +124,10 @@ export const updateUserSchema = z.object({
     verified: z.boolean().optional(),
     role: z.enum(Role).optional(),
     active: z.boolean().optional(),
+    street: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
+    zipCode: z.string().optional(),
   }),
 });
 

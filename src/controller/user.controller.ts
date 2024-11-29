@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextFunction, Request, Response } from 'express';
+import { DeleteUserInput, RestoreUserInput, UpdateMeInput, UpdateUserInput } from '../schema/user.schema';
 import {
-  createAddress,
   deleteMe,
   deleteUser,
   findUserByEmail,
-  findUserById,
   getUsers,
   restoreUser,
   updateMe,
@@ -14,9 +13,6 @@ import {
 import { CustomRequests, ExtendedUser } from '../types';
 import AppError from '../utils/AppError';
 import catchAsync from '../utils/catchAsync';
-import { Profile, User } from '@prisma/client';
-import { DeleteUserInput, RestoreUserInput, UpdateMeInput, UpdateUserInput } from '../schema/user.schema';
-import log from '../utils/logger';
 
 /** @description returns all users from db
  *  @example   res.status(200).json({
@@ -38,36 +34,8 @@ export const getAllUsersHandler = catchAsync(async (req: Request, res: Response,
 /**@description update user data without password and returns updated user */
 export const updateMeHandler = catchAsync(
   async (req: CustomRequests<object, UpdateMeInput>, res: Response, next: NextFunction) => {
-    const { id, address } = req.user;
+    const { id } = req.user;
     const { phoneNumber, city, state, street, zipCode, email, firstName, lastName, gender } = req.body;
-
-    const hasAddress = address;
-    if (!hasAddress) {
-      const address = await createAddress({
-        id,
-        city,
-        state,
-        street,
-        zipCode,
-      });
-
-      const updatedUser = await updateMe(id, {
-        phoneNumber,
-        email,
-        firstName,
-        lastName,
-        gender,
-      });
-
-      res.status(200).json({
-        status: 'success',
-        data: {
-          user: { ...updatedUser },
-        },
-      });
-
-      return;
-    }
 
     if (!phoneNumber && !city && state && street && zipCode && !email && !firstName && !lastName && !gender) {
       return next(new AppError('There is no data to update', 400));
@@ -84,6 +52,55 @@ export const updateMeHandler = catchAsync(
       lastName,
       gender,
     });
+    res.status(200).json({
+      status: 'success',
+      data: {
+        user: {
+          ...updatedUser,
+        },
+      },
+    });
+  },
+);
+
+/** @description makes admin update user data */
+export const updateUserHandler = catchAsync(
+  async (req: Request<object, object, UpdateUserInput>, res: Response, next: NextFunction) => {
+    const {
+      email,
+      firstName,
+      fullAddress,
+      gender,
+      lastName,
+      phoneNumber,
+      role,
+      verified,
+      active,
+      city,
+      state,
+      street,
+      zipCode,
+    } = req.body;
+
+    if (!phoneNumber && !fullAddress && !email && !firstName && !lastName && !gender && role && verified) {
+      return next(new AppError('There is no data to update', 400));
+    }
+
+    const updatedUser = await updateUser(email, {
+      email,
+      firstName,
+      gender,
+      lastName,
+      phoneNumber,
+      role,
+      verified,
+      active,
+      city,
+      state,
+      street,
+      zipCode,
+    });
+
     res.status(200).json({
       status: 'success',
       data: {
@@ -164,34 +181,3 @@ export const getMeHandler = catchAsync(async (req: CustomRequests, res: Response
     },
   });
 });
-
-/** @description makes admin update user data */
-export const updateUserHandler = catchAsync(
-  async (req: Request<object, object, UpdateUserInput>, res: Response, next: NextFunction) => {
-    const { email, firstName, fullAddress, gender, lastName, phoneNumber, role, verified, active } = req.body;
-
-    if (!phoneNumber && !fullAddress && !email && !firstName && !lastName && !gender && role && verified) {
-      return next(new AppError('There is no data to update', 400));
-    }
-
-    const updatedUser = await updateUser(email, {
-      email,
-      firstName,
-      gender,
-      lastName,
-      phoneNumber,
-      role,
-      verified,
-      active,
-    });
-
-    res.status(200).json({
-      status: 'success',
-      data: {
-        user: {
-          ...updatedUser,
-        },
-      },
-    });
-  },
-);
