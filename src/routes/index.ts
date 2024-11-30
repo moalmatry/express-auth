@@ -12,6 +12,12 @@ router.get('/healthCheck', (_: Request, res: Response) => {
   res.sendStatus(200);
 });
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+router.get('/', (req: Request, res: Response) => {
+  return res.send('Express Typescript on Vercel !!!!!');
+});
+
 router.use('/api/users', user);
 router.use('/api/categories', categories);
 router.use('/api/products', products);
